@@ -1,36 +1,37 @@
-Play! Framework RabbitMQ Module
-by Felipe Oliveira (http://mashup.fm)
+h1. Play! Framework RabbitMQ Module
+h3. by Felipe Oliveira ("http://mashup.fm(http://mashup.fm)":http://mashup.fm)
 
 
 
-1) Installation
+# Installation
 
 play install rabbitmq
 
 
 
-2) Configuration
+# Configuration
 
-# RabbitMQ
+@# RabbitMQ
 rabbitmq.host=localhost
 rabbitmq.port=5672
 rabbitmq.userName=guest
 rabbitmq.password=guest
-rabbitmq.vhost=/
+rabbitmq.vhost=/@
 
 
 
-3) Publishing a Message
+# Publishing a Message
 
-public static void publish(String q) {
+@public static void publish(String q) {
 	RabbitMQPublisher.publish("myQueue", q);
     render(q);
-}
+}@
 
 
 
-4) Creating a Message Consumer
+# Creating a Message Consumer
 
+@
 @OnApplicationStart(async=true)
 public class RabbitMQSampleConsumer extends RabbitMQConsumer {
 
@@ -56,4 +57,4 @@ public class RabbitMQSampleConsumer extends RabbitMQConsumer {
 		return "myQueue";
 	}
 }
-
+@
