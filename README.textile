@@ -1,5 +1,5 @@
 h1. Play! Framework RabbitMQ Module
-h3. by Felipe Oliveira ("http://mashup.fm(http://mashup.fm)":http://mashup.fm)
+by Felipe Oliveira (http://mashup.fm)
 
 
 
@@ -11,8 +11,7 @@ play install rabbitmq
 
 # Configuration
 
-@# RabbitMQ
-rabbitmq.host=localhost
+@rabbitmq.host=localhost
 rabbitmq.port=5672
 rabbitmq.userName=guest
 rabbitmq.password=guest
@@ -37,10 +36,7 @@ public class RabbitMQSampleConsumer extends RabbitMQConsumer {
 
 	/**
 	 * Sample Consumer
-	 * 
-	 * @see play.modules.rabbitmq.consumer.RabbitMQConsumer#consume(java.lang.Object)
 	 */
-	@Override
 	protected void consume(Object message) {
 		System.out.println("******************************");
 		System.out.println("* Message Consumed: " + message);
@@ -49,10 +45,7 @@ public class RabbitMQSampleConsumer extends RabbitMQConsumer {
 
 	/**
 	 * Name of the Queue that this consumer will be listening to
-	 * 
-	 * @see play.modules.rabbitmq.consumer.RabbitMQConsumer#queue()
 	 */
-	@Override
 	protected String queue() {
 		return "myQueue";
 	}
