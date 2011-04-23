@@ -3,13 +3,13 @@ by Felipe Oliveira (http://mashup.fm)
 
 
 
-# Installation
+1) Installation
 
 play install rabbitmq
 
 
 
-# Configuration
+2) Configuration
 
 rabbitmq.host=localhost
 rabbitmq.port=5672
@@ -19,7 +19,7 @@ rabbitmq.vhost=/
 
 
 
-# Publishing a Message
+3) Publishing a Message
 
 public static void publish(String q) {
 	RabbitMQPublisher.publish("myQueue", q);
@@ -28,7 +28,7 @@ public static void publish(String q) {
 
 
 
-# Creating a Message Consumer
+4) Creating a Message Consumer
 
 @
 @OnApplicationStart(async=true)
