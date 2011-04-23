@@ -29,6 +29,7 @@ import play.modules.rabbitmq.util.ExceptionUtil;
 
 import com.rabbitmq.client.Channel;
 
+// TODO: Auto-generated Javadoc
 /**
  * The Class RabbitMQPublisher.
  */
@@ -60,6 +61,8 @@ public abstract class RabbitMQPublisher {
 		/**
 		 * Instantiates a new rabbit mq publisher.
 		 * 
+		 * @param queueName
+		 *            the queue name
 		 * @param message
 		 *            the message
 		 */
@@ -69,7 +72,7 @@ public abstract class RabbitMQPublisher {
 		}
 
 		/**
-		 * Deliver Message
+		 * Deliver Message.
 		 * 
 		 * @see play.jobs.Job#doJob()
 		 */

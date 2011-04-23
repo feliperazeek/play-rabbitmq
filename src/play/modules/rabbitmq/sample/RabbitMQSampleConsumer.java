@@ -21,6 +21,7 @@ package play.modules.rabbitmq.sample;
 import play.jobs.OnApplicationStart;
 import play.modules.rabbitmq.consumer.RabbitMQConsumer;
 
+// TODO: Auto-generated Javadoc
 /**
  * The Class RabbitMQSampleConsumer.
  */
@@ -28,8 +29,10 @@ import play.modules.rabbitmq.consumer.RabbitMQConsumer;
 public class RabbitMQSampleConsumer extends RabbitMQConsumer {
 
 	/**
-	 * Sample Consumer
+	 * Sample Consumer.
 	 * 
+	 * @param message
+	 *            the message
 	 * @see play.modules.rabbitmq.consumer.RabbitMQConsumer#consume(java.lang.Object)
 	 */
 	@Override
@@ -40,8 +43,9 @@ public class RabbitMQSampleConsumer extends RabbitMQConsumer {
 	}
 
 	/**
-	 * Name of the Queue that this consumer will be listening to
+	 * Name of the Queue that this consumer will be listening to.
 	 * 
+	 * @return the string
 	 * @see play.modules.rabbitmq.consumer.RabbitMQConsumer#queue()
 	 */
 	@Override

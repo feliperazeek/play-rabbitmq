@@ -31,6 +31,7 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.QueueingConsumer;
 import com.rabbitmq.client.AMQP.Queue;
 
+// TODO: Auto-generated Javadoc
 /**
  * The Class RabbitMQConsumerJob.
  * 
@@ -52,7 +53,7 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 	QueueingConsumer consumer = null;
 
 	/**
-	 * Let our baby go!
+	 * Let our baby go!.
 	 * 
 	 * @see play.jobs.Job#doJob()
 	 */
@@ -131,7 +132,7 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 		int attempts = 0;
 		RabbitMQPlugin plugin = Play.plugin(RabbitMQPlugin.class);
 		Logger.info("Initializing connections to RabbitMQ instance (%s:%s)",
-				plugin.getHost(), plugin.getPort());
+				RabbitMQPlugin.getHost(), RabbitMQPlugin.getPort());
 		this.channel = plugin.createChannel();
 
 		while (true) {

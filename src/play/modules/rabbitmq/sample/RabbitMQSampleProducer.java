@@ -20,6 +20,7 @@ package play.modules.rabbitmq.sample;
 
 import play.modules.rabbitmq.producer.RabbitMQPublisher;
 
+// TODO: Auto-generated Javadoc
 /**
  * The Class SampleProducer.
  */

@@ -9,29 +9,47 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class StatsService.
+ */
 @Path("/rabbitmq")
 public class StatsService {
 
 	// Keep track of all tasks we've seen executed.
+	/** The Constant instrumentedTasks. */
 	protected static final ArrayList<String> instrumentedTasks = new ArrayList<String>();
 
 	// Keep track of average task throughput (last 10k runs per task).
+	/** The Constant executionTimes. */
 	protected static final HashMap<String, LinkedList<Long>> executionTimes = new HashMap<String, LinkedList<Long>>();
 
 	// Keep track of total successes by task.
+	/** The Constant consumerSuccessCount. */
 	protected static final HashMap<String, Integer> consumerSuccessCount = new HashMap<String, Integer>();
 
 	// Keep track of total failures by task.
+	/** The Constant consumerFailedCount. */
 	protected static final HashMap<String, Integer> consumerFailedCount = new HashMap<String, Integer>();
 
 	// Keep track of total successes by task.
+	/** The Constant producerSuccessCount. */
 	protected static final HashMap<String, Integer> producerSuccessCount = new HashMap<String, Integer>();
 
 	// Keep track of total failures by task.
+	/** The Constant producerFailedCount. */
 	protected static final HashMap<String, Integer> producerFailedCount = new HashMap<String, Integer>();
 
+	/** The Constant metricsLock. */
 	protected static final Object metricsLock = new Object();
 
+	/**
+	 * Queue stats.
+	 * 
+	 * @param queueName
+	 *            the queue name
+	 * @return the stats
+	 */
 	@GET
 	@Path("/queue/{queue}/stats")
 	@Produces("application/json")
@@ -40,6 +58,18 @@ public class StatsService {
 	}
 
 	// Updates internal metrics following task execution.
+	/**
+	 * Consumer update.
+	 * 
+	 * @param queue
+	 *            the queue
+	 * @param time
+	 *            the time
+	 * @param status
+	 *            the status
+	 * @param retries
+	 *            the retries
+	 */
 	public static void consumerUpdate(String queue, long time, boolean status,
 			int retries) {
 
@@ -52,6 +82,18 @@ public class StatsService {
 		}
 	}
 
+	/**
+	 * Producer update.
+	 * 
+	 * @param queue
+	 *            the queue
+	 * @param time
+	 *            the time
+	 * @param status
+	 *            the status
+	 * @param retries
+	 *            the retries
+	 */
 	public static void producerUpdate(String queue, long time, boolean status,
 			int retries) {
 
@@ -65,6 +107,14 @@ public class StatsService {
 	}
 
 	// Update the list of execution times, keeping the last 10,000 per task.
+	/**
+	 * Update execution times.
+	 * 
+	 * @param queue
+	 *            the queue
+	 * @param time
+	 *            the time
+	 */
 	private static void updateExecutionTimes(String queue, long time) {
 		if (!executionTimes.containsKey(queue)) {
 			LinkedList<Long> timeList = new LinkedList<Long>();
@@ -80,6 +130,14 @@ public class StatsService {
 	}
 
 	// Update the number of times this task has succeeded or failed.
+	/**
+	 * Update producer results.
+	 * 
+	 * @param queue
+	 *            the queue
+	 * @param status
+	 *            the status
+	 */
 	private static void updateProducerResults(String queue, boolean status) {
 		if (status == true) {
 			if (!producerSuccessCount.containsKey(queue)) {
@@ -99,6 +157,14 @@ public class StatsService {
 	}
 
 	// Update the number of times this task has succeeded or failed.
+	/**
+	 * Update consumer results.
+	 * 
+	 * @param queue
+	 *            the queue
+	 * @param status
+	 *            the status
+	 */
 	private static void updateConsumerResults(String queue, boolean status) {
 		if (status == true) {
 			if (!consumerSuccessCount.containsKey(queue)) {

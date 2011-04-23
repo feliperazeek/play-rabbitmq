@@ -6,8 +6,18 @@ import play.Logger;
 import play.jobs.Job;
 import play.modules.rabbitmq.util.ExceptionUtil;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class RabbitMQFirehose.
+ */
 public abstract class RabbitMQFirehose extends Job {
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see play.jobs.Job#doJob()
+	 */
+	@Override
 	public void doJob() {
 		while (true) {
 			try {
@@ -33,12 +43,36 @@ public abstract class RabbitMQFirehose extends Job {
 		}
 	}
 
+	/**
+	 * Gets the data.
+	 * 
+	 * @param n
+	 *            the n
+	 * @return the data
+	 * @throws Exception
+	 *             the exception
+	 */
 	protected abstract List<String> getData(int n) throws Exception;
 
+	/**
+	 * Batch size.
+	 * 
+	 * @return the int
+	 */
 	protected abstract int batchSize();
 
+	/**
+	 * Queue name.
+	 * 
+	 * @return the string
+	 */
 	protected abstract String queueName();
 
+	/**
+	 * Sleep in between batches.
+	 * 
+	 * @return the long
+	 */
 	protected long sleepInBetweenBatches() {
 		long l = 1000l; // 1 sec
 		l = l * 60; // 1 minute
