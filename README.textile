@@ -11,20 +11,20 @@ play install rabbitmq
 
 # Configuration
 
-@rabbitmq.host=localhost
+rabbitmq.host=localhost
 rabbitmq.port=5672
 rabbitmq.userName=guest
 rabbitmq.password=guest
-rabbitmq.vhost=/@
+rabbitmq.vhost=/
 
 
 
 # Publishing a Message
 
-@public static void publish(String q) {
+public static void publish(String q) {
 	RabbitMQPublisher.publish("myQueue", q);
     render(q);
-}@
+}
 
 
 
@@ -38,9 +38,7 @@ public class RabbitMQSampleConsumer extends RabbitMQConsumer {
 	 * Sample Consumer
 	 */
 	protected void consume(Object message) {
-		System.out.println("******************************");
-		System.out.println("* Message Consumed: " + message);
-		System.out.println("******************************");
+		System.out.println("Message Consumed: " + message);
 	}
 
 	/**
