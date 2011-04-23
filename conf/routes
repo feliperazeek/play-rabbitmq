@@ -6,3 +6,5 @@
 # ~~~~
 
 GET     /?                      Module.index
+
+GET		/rabbitmq/queue/{queue}/stats	RabbitMQStats.queue

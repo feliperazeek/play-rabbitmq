@@ -27,8 +27,9 @@ public class RabbitMQSampleProducer {
 
 	/**
 	 * The main method.
-	 *
-	 * @param args the arguments
+	 * 
+	 * @param args
+	 *            the arguments
 	 */
 	public static void main(String[] args) {
 		RabbitMQPublisher.publish("myQueue", "Hello World");

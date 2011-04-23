@@ -24,7 +24,7 @@ import play.modules.rabbitmq.consumer.RabbitMQConsumer;
 /**
  * The Class RabbitMQSampleConsumer.
  */
-@OnApplicationStart()
+@OnApplicationStart(async = true)
 public class RabbitMQSampleConsumer extends RabbitMQConsumer {
 
 	/**

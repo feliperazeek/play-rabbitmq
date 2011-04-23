@@ -68,7 +68,10 @@ public class RabbitMQPlugin extends PlayPlugin {
 				break;
 
 			} catch (IOException e) {
-				Logger.error("Error creating RabbitMQ channel, retrying in 5 secs - Exception: %s", ExceptionUtil.getStackTrace(e));
+				Logger
+						.error(
+								"Error creating RabbitMQ channel, retrying in 5 secs - Exception: %s",
+								ExceptionUtil.getStackTrace(e));
 				try {
 					Thread.sleep(1000 * 5);
 				} catch (InterruptedException ex) {

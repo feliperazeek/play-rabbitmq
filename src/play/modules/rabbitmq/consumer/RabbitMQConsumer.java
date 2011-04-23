@@ -18,9 +18,7 @@
  */
 package play.modules.rabbitmq.consumer;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 
 import play.Logger;
 import play.Play;
@@ -28,10 +26,10 @@ import play.jobs.Job;
 import play.modules.rabbitmq.RabbitMQPlugin;
 import play.modules.rabbitmq.util.ExceptionUtil;
 
-import com.rabbitmq.client.AMQP.Queue;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.QueueingConsumer;
+import com.rabbitmq.client.AMQP.Queue;
 
 /**
  * The Class RabbitMQConsumerJob.
@@ -76,7 +74,7 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 	private void goGetHerSon() {
 		// Tell her what's up
 		this.channel = this.createChannel();
-		
+
 		// The endless life of a true playa!
 		while (true) {
 			// Show some interest
@@ -101,11 +99,15 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 					this.consume(toObject(task.getBody()));
 
 					// Now tell Daddy everything is cool
-					this.channel.basicAck(task.getEnvelope().getDeliveryTag(), false);
+					this.channel.basicAck(task.getEnvelope().getDeliveryTag(),
+							false);
 
 				} catch (Throwable t) {
 					// Log Debug
-					Logger.error("Error trying to acknowledge message delivery - Error: %s", ExceptionUtil.getStackTrace(t));
+					Logger
+							.error(
+									"Error trying to acknowledge message delivery - Error: %s",
+									ExceptionUtil.getStackTrace(t));
 				}
 
 			}
@@ -128,7 +130,8 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 	private Channel createChannel() {
 		int attempts = 0;
 		RabbitMQPlugin plugin = Play.plugin(RabbitMQPlugin.class);
-		Logger.info("Initializing connections to RabbitMQ instance (%s:%s)", plugin.getHost(), plugin.getPort());
+		Logger.info("Initializing connections to RabbitMQ instance (%s:%s)",
+				plugin.getHost(), plugin.getPort());
 		this.channel = plugin.createChannel();
 
 		while (true) {
@@ -143,8 +146,10 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 				// }
 				this.consumer = new QueueingConsumer(this.channel);
 				this.channel.exchangeDeclare(this.queue(), "direct", true);
-				this.channel.queueDeclare(this.queue(), true, false, false, null);
-				this.channel.queueBind(this.queue(), this.queue(), this.queue());
+				this.channel.queueDeclare(this.queue(), true, false, false,
+						null);
+				this.channel
+						.queueBind(this.queue(), this.queue(), this.queue());
 				this.channel.basicConsume(this.queue(), false, this.consumer);
 
 				Logger.info("RabbitMQ Task Channel Available: " + this.channel);
@@ -152,7 +157,10 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 				return this.channel;
 
 			} catch (Throwable t) {
-				Logger.error("Error establishing a connection to RabbitMQ, will keep retrying - Exception: %s", ExceptionUtil.getStackTrace(t));
+				Logger
+						.error(
+								"Error establishing a connection to RabbitMQ, will keep retrying - Exception: %s",
+								ExceptionUtil.getStackTrace(t));
 				try {
 					Thread.sleep(1000 * 10);
 				} catch (InterruptedException ex) {
@@ -172,8 +180,10 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 	 * @throws ClassNotFoundException
 	 *             the class not found exception
 	 */
-	public static Object toObject(byte[] bytes) throws IOException, ClassNotFoundException {
-		// Object object = new ObjectInputStream(new ByteArrayInputStream(bytes)).readObject();
+	public static Object toObject(byte[] bytes) throws IOException,
+			ClassNotFoundException {
+		// Object object = new ObjectInputStream(new
+		// ByteArrayInputStream(bytes)).readObject();
 		// return object;
 		return new String(bytes);
 	}

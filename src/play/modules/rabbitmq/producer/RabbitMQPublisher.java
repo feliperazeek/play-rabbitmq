@@ -18,20 +18,16 @@
  */
 package play.modules.rabbitmq.producer;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
 
 import play.Logger;
 import play.Play;
 import play.jobs.Job;
 import play.modules.rabbitmq.RabbitMQPlugin;
+import play.modules.rabbitmq.stats.StatsService;
 import play.modules.rabbitmq.util.ExceptionUtil;
 
 import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.MessageProperties;
 
 /**
  * The Class RabbitMQPublisher.
@@ -81,23 +77,36 @@ public abstract class RabbitMQPublisher {
 		public void doJob() {
 			try {
 				// Get Producer Information
-				RabbitMQProducer producer = this.getClass().getAnnotation(RabbitMQProducer.class);
+				RabbitMQProducer producer = this.getClass().getAnnotation(
+						RabbitMQProducer.class);
 				if ((producer == null) && (this.queueName == null)) {
-					throw new RuntimeException("Please define annotation @RabbitMQProducer.");
+					throw new RuntimeException(
+							"Please define annotation @RabbitMQProducer.");
 				}
 
 				// Create Channel
 				RabbitMQPlugin plugin = Play.plugin(RabbitMQPlugin.class);
 				Channel channel = plugin.createChannel();
 				if (channel == null) {
-					throw new RuntimeException("Error creating a communication channel with RabbitMQ. Please verify the health of your RabbitMQ node and check your configuration.");
+					throw new RuntimeException(
+							"Error creating a communication channel with RabbitMQ. Please verify the health of your RabbitMQ node and check your configuration.");
 				}
 
 				// Publish Message
-				channel.basicPublish("", this.queueName, null, this.getBytes(this.message));
+				channel.basicPublish("", this.queueName, null, this
+						.getBytes(this.message));
+
+				// Update Stats
+				boolean success = true;
+				StatsService.producerUpdate(this.queueName, 1l, success, 0);
 
 			} catch (Throwable t) {
+				// Handle Exception
 				Logger.error(ExceptionUtil.getStackTrace(t));
+
+				// Update Stats
+				boolean success = false;
+				StatsService.producerUpdate(this.queueName, 1l, success, 0);
 			}
 		}
 
