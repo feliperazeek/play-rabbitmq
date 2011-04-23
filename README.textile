@@ -30,22 +30,14 @@ public static void publish(String q) {
 
 4) Creating a Message Consumer
 
-@
 @OnApplicationStart(async=true)
 public class RabbitMQSampleConsumer extends RabbitMQConsumer {
 
-	/**
-	 * Sample Consumer
-	 */
 	protected void consume(Object message) {
 		System.out.println("Message Consumed: " + message);
 	}
 
-	/**
-	 * Name of the Queue that this consumer will be listening to
-	 */
 	protected String queue() {
 		return "myQueue";
 	}
 }
-@
