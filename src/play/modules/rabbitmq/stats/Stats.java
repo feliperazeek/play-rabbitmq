@@ -9,22 +9,22 @@ import java.io.Serializable;
 public class Stats implements Serializable {
 
 	/** The consumer success count. */
-	private long consumerSuccessCount;
+	private long consumerSuccessCount = 0l;
 
 	/** The consumer failed count. */
-	private long consumerFailedCount;
+	private long consumerFailedCount = 0l;
 
 	/** The consumer total count. */
-	private long consumerTotalCount;
+	private long consumerTotalCount = 0l;
 
 	/** The producer success count. */
-	private long producerSuccessCount;
+	private long producerSuccessCount = 0l;
 
 	/** The producer failed count. */
-	private long producerFailedCount;
+	private long producerFailedCount = 0l;
 
 	/** The producer total count. */
-	private long producerTotalCount;
+	private long producerTotalCount = 0l;
 
 	/**
 	 * Instantiates a new stats.

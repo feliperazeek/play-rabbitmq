@@ -15,28 +15,21 @@ import javax.ws.rs.Produces;
  */
 @Path("/rabbitmq")
 public class StatsService {
-
-	// Keep track of all tasks we've seen executed.
 	/** The Constant instrumentedTasks. */
 	protected static final ArrayList<String> instrumentedTasks = new ArrayList<String>();
 
-	// Keep track of average task throughput (last 10k runs per task).
 	/** The Constant executionTimes. */
 	protected static final HashMap<String, LinkedList<Long>> executionTimes = new HashMap<String, LinkedList<Long>>();
 
-	// Keep track of total successes by task.
 	/** The Constant consumerSuccessCount. */
 	protected static final HashMap<String, Integer> consumerSuccessCount = new HashMap<String, Integer>();
 
-	// Keep track of total failures by task.
 	/** The Constant consumerFailedCount. */
 	protected static final HashMap<String, Integer> consumerFailedCount = new HashMap<String, Integer>();
 
-	// Keep track of total successes by task.
 	/** The Constant producerSuccessCount. */
 	protected static final HashMap<String, Integer> producerSuccessCount = new HashMap<String, Integer>();
 
-	// Keep track of total failures by task.
 	/** The Constant producerFailedCount. */
 	protected static final HashMap<String, Integer> producerFailedCount = new HashMap<String, Integer>();
 
@@ -50,14 +43,26 @@ public class StatsService {
 	 *            the queue name
 	 * @return the stats
 	 */
-	@GET
-	@Path("/queue/{queue}/stats")
-	@Produces("application/json")
+	// @GET
+	// @Path("/queue/{queue}/stats")
+	// @Produces("application/json")
 	public Stats queueStats(@PathParam("queue") String queueName) {
-		return null;
+		Stats stats = new Stats();
+		if ( consumerSuccessCount != null && consumerSuccessCount.containsKey(queueName) ) {
+			stats.setConsumerSuccessCount(new Long(consumerSuccessCount.get(queueName)));
+		}
+		if ( consumerFailedCount != null && consumerFailedCount.containsKey(queueName) ) {
+			stats.setConsumerFailedCount(new Long(consumerFailedCount.get(queueName)));
+		}
+		if ( producerSuccessCount != null && producerSuccessCount.containsKey(queueName) ) {
+			stats.setProducerSuccessCount(new Long(producerSuccessCount.get(queueName)));
+		}
+		if ( producerFailedCount != null && producerFailedCount.containsKey(queueName) ) {
+			stats.setProducerFailedCount(new Long(producerFailedCount.get(queueName)));
+		}
+		return stats;
 	}
 
-	// Updates internal metrics following task execution.
 	/**
 	 * Consumer update.
 	 * 
@@ -106,7 +111,6 @@ public class StatsService {
 		}
 	}
 
-	// Update the list of execution times, keeping the last 10,000 per task.
 	/**
 	 * Update execution times.
 	 * 
@@ -129,7 +133,6 @@ public class StatsService {
 		}
 	}
 
-	// Update the number of times this task has succeeded or failed.
 	/**
 	 * Update producer results.
 	 * 
@@ -156,7 +159,6 @@ public class StatsService {
 		}
 	}
 
-	// Update the number of times this task has succeeded or failed.
 	/**
 	 * Update consumer results.
 	 * 
