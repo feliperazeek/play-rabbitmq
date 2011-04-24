@@ -16,8 +16,8 @@ import play.modules.rabbitmq.producer.RabbitMQFirehose;
 @OnApplicationStart(async = true)
 public class RabbitMQSampleFirehose extends RabbitMQFirehose {
 
-	/*
-	 * (non-Javadoc)
+	/**
+	 * Get data to be loaded
 	 * 
 	 * @see play.modules.rabbitmq.producer.RabbitMQFirehose#getData(int)
 	 */
@@ -31,8 +31,8 @@ public class RabbitMQSampleFirehose extends RabbitMQFirehose {
 		return results;
 	}
 
-	/*
-	 * (non-Javadoc)
+	/**
+	 * Batch Size - How many records we will select at the time?
 	 * 
 	 * @see play.modules.rabbitmq.producer.RabbitMQFirehose#batchSize()
 	 */
@@ -41,8 +41,8 @@ public class RabbitMQSampleFirehose extends RabbitMQFirehose {
 		return 2;
 	}
 
-	/*
-	 * (non-Javadoc)
+	/**
+	 * Queue Name
 	 * 
 	 * @see play.modules.rabbitmq.producer.RabbitMQFirehose#queueName()
 	 */
