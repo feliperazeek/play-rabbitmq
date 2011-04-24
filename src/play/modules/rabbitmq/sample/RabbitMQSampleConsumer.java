@@ -26,9 +26,8 @@ import play.modules.rabbitmq.consumer.RabbitMQConsumer;
  * The Class RabbitMQSampleConsumer.
  */
 // You need to uncomment the line below to allow the job to get triggered
-// @OnApplicationStart(async = true)
+@OnApplicationStart(async = true)
 public class RabbitMQSampleConsumer extends RabbitMQConsumer<SampleMessage> {
-
 
 	/**
 	 * Consume Message

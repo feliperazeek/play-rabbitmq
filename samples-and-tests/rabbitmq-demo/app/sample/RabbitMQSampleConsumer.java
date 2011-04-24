@@ -21,32 +21,44 @@ package sample;
 import play.jobs.OnApplicationStart;
 import play.modules.rabbitmq.consumer.RabbitMQConsumer;
 
+// TODO: Auto-generated Javadoc
 /**
  * The Class RabbitMQSampleConsumer.
  */
 @OnApplicationStart(async=true)
-public class RabbitMQSampleConsumer extends RabbitMQConsumer {
+public class RabbitMQSampleConsumer extends RabbitMQConsumer<SampleMessage> {
 
 	/**
-	 * Sample Consumer
+	 * Consume Message
 	 * 
-	 * @see play.modules.rabbitmq.consumer.RabbitMQConsumer#consume(java.lang.Object)
+	 * @see play.modules.rabbitmq.consumer.RabbitMQConsumer#consume(T)
 	 */
 	@Override
-	protected void consume(Object message) {
+	protected void consume(SampleMessage message) {
 		System.out.println("******************************");
 		System.out.println("* Message Consumed: " + message);
 		System.out.println("******************************");
 	}
 
 	/**
-	 * Name of the Queue that this consumer will be listening to
-	 * 
+	 * Name of the Queue that this consumer will be listening to.
+	 *
+	 * @return the string
 	 * @see play.modules.rabbitmq.consumer.RabbitMQConsumer#queue()
 	 */
 	@Override
 	protected String queue() {
 		return "myQueue";
+	}
+	
+	/**
+	 * Return message type.
+	 *
+	 * @return the message type
+	 * @see play.modules.rabbitmq.consumer.RabbitMQConsumer#getMessageType()
+	 */
+	protected Class getMessageType() {
+		return SampleMessage.class;
 	}
 }
 

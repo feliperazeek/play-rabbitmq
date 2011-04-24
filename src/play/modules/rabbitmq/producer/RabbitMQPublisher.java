@@ -80,6 +80,9 @@ public abstract class RabbitMQPublisher {
 		@Override
 		public void doJob() {
 			try {
+				// Start Timer
+				long start = System.nanoTime();
+				
 				// Get Producer Information
 				RabbitMQProducer producer = this.getClass().getAnnotation(
 						RabbitMQProducer.class);
@@ -98,10 +101,14 @@ public abstract class RabbitMQPublisher {
 
 				// Publish Message
 				channel.basicPublish("", this.queueName, null, JSONMapper.getBytes(this.message));
+				
+				// Execution Time
+				long executionTime = System.nanoTime() - start;
+				Logger.info("Message %s has been published to queue %s (execution time: %s ms)", this.message, this.queueName, executionTime);
 
 				// Update Stats
 				boolean success = true;
-				StatsService.producerUpdate(this.queueName, 1l, success, 0);
+				StatsService.producerUpdate(this.queueName, executionTime, success, 0);
 
 			} catch (Throwable t) {
 				// Handle Exception
@@ -109,7 +116,7 @@ public abstract class RabbitMQPublisher {
 
 				// Update Stats
 				boolean success = false;
-				StatsService.producerUpdate(this.queueName, 1l, success, 0);
+				StatsService.producerUpdate(this.queueName, 0l, success, 0);
 			}
 		}
 

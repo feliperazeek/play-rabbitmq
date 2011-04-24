@@ -25,6 +25,7 @@ import play.Logger;
 import play.Play;
 import play.jobs.Job;
 import play.modules.rabbitmq.RabbitMQPlugin;
+import play.modules.rabbitmq.stats.StatsService;
 import play.modules.rabbitmq.util.ExceptionUtil;
 import play.modules.rabbitmq.util.JSONMapper;
 
@@ -98,12 +99,24 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 			// Date Night
 			if ((task != null) && (task.getBody() != null)) {
 				try {
+					// Start Timer
+					long start = System.nanoTime();
+					
 					// Go have some fun with her
-					this.consume(toObject(task.getBody()));
+					T message = toObject(task.getBody());
+					this.consume(message);
 
 					// Now tell Daddy everything is cool
 					this.channel.basicAck(task.getEnvelope().getDeliveryTag(),
 							false);
+					
+					// Execution Time
+					long executionTime = System.nanoTime() - start;
+					Logger.info("Message %s has been published to queue %s (execution time: %s ms)", message, this.queue(), executionTime);
+
+					// Update Stats
+					boolean success = true;
+					StatsService.producerUpdate(this.queue(), executionTime, success, 0);
 
 				} catch (Throwable t) {
 					// Log Debug
@@ -111,6 +124,10 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 							.error(
 									"Error trying to acknowledge message delivery - Error: %s",
 									ExceptionUtil.getStackTrace(t));
+					
+					// Update Stats
+					boolean success = false;
+					StatsService.producerUpdate(this.queue(), 0l, success, 0);
 				}
 
 			}

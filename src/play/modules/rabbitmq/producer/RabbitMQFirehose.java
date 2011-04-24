@@ -4,6 +4,7 @@ import java.util.List;
 
 import play.Logger;
 import play.jobs.Job;
+import play.modules.rabbitmq.stats.StatsService;
 import play.modules.rabbitmq.util.ExceptionUtil;
 
 // TODO: Auto-generated Javadoc
@@ -38,6 +39,7 @@ public abstract class RabbitMQFirehose<T> extends Job {
 					for (T item : items) {
 						try {
 							RabbitMQPublisher.publish(queueName(), item);
+							
 						} catch (Throwable t) {
 							Logger.error(ExceptionUtil.getStackTrace(t));
 						}
