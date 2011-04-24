@@ -6,7 +6,7 @@
 </p>
 <script type="text/javascript" charset="utf-8">
     setInterval(function() {
-        $('section').load('@{producerSuccess()} #producerSuccess')
+        $('section').load('@{queueProducerSuccess(queueName)} #producerSuccess')
     }, 1000)
 </script>
 
@@ -15,7 +15,7 @@
 </p>
 <script type="text/javascript" charset="utf-8">
     setInterval(function() {
-        $('section').load('@{producerFailed()} #producerFailed')
+        $('section').load('@{queueProducerFailed(queueName)} #producerFailed')
     }, 1000)
 </script>         
 
@@ -25,7 +25,7 @@
 </p>
 <script type="text/javascript" charset="utf-8">
     setInterval(function() {
-        $('section').load('@{consumerSuccess()} #consumerSuccess')
+        $('section').load('@{queueConsumerSuccess(queueName)} #consumerSuccess')
     }, 1000)
 </script>
 
@@ -34,6 +34,6 @@
 </p>
 <script type="text/javascript" charset="utf-8">
     setInterval(function() {
-        $('section').load('@{consumerFailed()} #consumerFailed')
+        $('section').load('@{queueConsumerFailed(queueName)} #consumerFailed')
     }, 1000)
 </script>                                  

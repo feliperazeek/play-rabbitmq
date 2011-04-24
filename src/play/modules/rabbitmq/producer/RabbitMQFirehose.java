@@ -10,7 +10,7 @@ import play.modules.rabbitmq.util.ExceptionUtil;
 /**
  * The Class RabbitMQFirehose.
  */
-public abstract class RabbitMQFirehose extends Job {
+public abstract class RabbitMQFirehose<T> extends Job {
 
 	/**
 	 * Gets data to be loaded, loop on each one and publish them to RabbitMQ
@@ -27,7 +27,7 @@ public abstract class RabbitMQFirehose extends Job {
 				int itemsCount = 0;
 				
 				// Get Data
-				List<String> items = getData(batchSize());
+				List<T> items = getData(batchSize());
 				
 				// Check List
 				if (items != null && items.size() > 0) {
@@ -35,7 +35,7 @@ public abstract class RabbitMQFirehose extends Job {
 					itemsCount = items.size();
 					
 					// Publish each message
-					for (String item : items) {
+					for (T item : items) {
 						try {
 							RabbitMQPublisher.publish(queueName(), item);
 						} catch (Throwable t) {
@@ -65,7 +65,7 @@ public abstract class RabbitMQFirehose extends Job {
 	 * @throws Exception
 	 *             the exception
 	 */
-	protected abstract List<String> getData(int n) throws Exception;
+	protected abstract List<T> getData(int n) throws Exception;
 
 	/**
 	 * Batch size.

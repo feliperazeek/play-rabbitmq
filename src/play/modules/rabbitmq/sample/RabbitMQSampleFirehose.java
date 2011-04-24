@@ -15,26 +15,36 @@ import play.modules.rabbitmq.producer.RabbitMQFirehose;
  */
 // You need to uncomment the line below to allow the job to get triggered
 // @OnApplicationStart(async = true)
-public class RabbitMQSampleFirehose extends RabbitMQFirehose {
+public class RabbitMQSampleFirehose extends RabbitMQFirehose<SampleMessage> {
+	
+	/** The count. */
+	public int count = 0;
 
 	/**
-	 * Get data to be loaded
-	 * 
+	 * Get data to be loaded.
+	 *
+	 * @param n the n
+	 * @return the data
+	 * @throws Exception the exception
 	 * @see play.modules.rabbitmq.producer.RabbitMQFirehose#getData(int)
 	 */
 	@Override
-	protected List<String> getData(int n) throws Exception {
-		List<String> results = new ArrayList<String>();
+	protected List<SampleMessage> getData(int n) throws Exception {
+		if ( count >= 10 ) {
+			return null;
+		}
+		List<SampleMessage> results = new ArrayList<SampleMessage>();
 		for (int i = 0; i < n; i++) {
-			results.add(new JSONObject().put("field1",
-					"Hello World (" + new Date().getTime() + ")").toString());
+			results.add(new SampleMessage("field1", "field2"));
+			count++;
 		}
 		return results;
 	}
 
 	/**
-	 * Batch Size - How many records we will select at the time?
-	 * 
+	 * Batch Size - How many records we will select at the time?.
+	 *
+	 * @return the int
 	 * @see play.modules.rabbitmq.producer.RabbitMQFirehose#batchSize()
 	 */
 	@Override
@@ -43,8 +53,9 @@ public class RabbitMQSampleFirehose extends RabbitMQFirehose {
 	}
 
 	/**
-	 * Queue Name
-	 * 
+	 * Queue Name.
+	 *
+	 * @return the string
 	 * @see play.modules.rabbitmq.producer.RabbitMQFirehose#queueName()
 	 */
 	@Override

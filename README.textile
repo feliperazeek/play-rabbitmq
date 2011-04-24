@@ -1,12 +1,13 @@
 h2. Play! Framework RabbitMQ Module, by Felipe Oliveira (http://mashup.fm)
 
 
-1) Installation
+h3. Installation
 
 play install rabbitmq
 
 
-2) Configuration
+
+h3. Configuration
 
 rabbitmq.host=localhost
 rabbitmq.port=5672
@@ -15,24 +16,104 @@ rabbitmq.password=guest
 rabbitmq.vhost=/
 
 
-3) Publishing a Message
 
-public static void publish(String q) {
+h3. Define Message that will be used by the Queue (just a simple POJO)
+
+public class SampleMessage implements Serializable {
+
+	private String field1;
+	
+	private String field2;
+	
+	public SampleMessage() {
+		
+	}
+	
+	public SampleMessage(String field1, String field2) {
+		super();
+		this.field1 = field1;
+		this.field2 = field2;
+	}
+
+	public String getField1() {
+		return field1;
+	}
+
+	public void setField1(String field1) {
+		this.field1 = field1;
+	}
+
+	public String getField2() {
+		return field2;
+	}
+
+	public void setField2(String field2) {
+		this.field2 = field2;
+	}
+	
+	@Override
+	public String toString() {
+		return "SampleMessage [field1=" + field1 + ", field2=" + field2 + "]";
+	}
+
+}
+
+
+h3. Publish a Message
+
+public static void publish(SampleMessage q) {
 	RabbitMQPublisher.publish("myQueue", q);
     render(q);
 }
 
 
-4) Creating a Message Consumer
 
-@OnApplicationStart(async=true)
-public class RabbitMQSampleConsumer extends RabbitMQConsumer {
+h3. Creating a Message Consumer
 
-	protected void consume(Object message) {
-		System.out.println("Message Consumed: " + message);
+public class RabbitMQSampleConsumer extends RabbitMQConsumer<SampleMessage> {
+
+	protected void consume(SampleMessage message) {
+		System.out.println("******************************");
+		System.out.println("* Message Consumed: " + message);
+		System.out.println("******************************");
 	}
 
 	protected String queue() {
 		return "myQueue";
 	}
+	
+	protected Class getMessageType() {
+		return SampleMessage.class;
+	}
+}
+
+
+
+h3. Firehose - Another way to publish messages in batch
+
+@OnApplicationStart(async = true)
+public class RabbitMQSampleFirehose extends RabbitMQFirehose<SampleMessage> {
+	
+	public int count = 0;
+
+	protected List<SampleMessage> getData(int n) throws Exception {
+		if ( count >= 10 ) {
+			return null;
+		}
+		List<SampleMessage> results = new ArrayList<SampleMessage>();
+		for (int i = 0; i < n; i++) {
+			results.add(new SampleMessage("field1", "field2"));
+			count++;
+		}
+		return results;
+	}
+
+	protected int batchSize() {
+		return 2;
+	}
+
+	protected String queueName() {
+		return "myQueue";
+	}
+
 }

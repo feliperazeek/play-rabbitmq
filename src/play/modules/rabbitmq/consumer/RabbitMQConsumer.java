@@ -19,12 +19,14 @@
 package play.modules.rabbitmq.consumer;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 import play.Logger;
 import play.Play;
 import play.jobs.Job;
 import play.modules.rabbitmq.RabbitMQPlugin;
 import play.modules.rabbitmq.util.ExceptionUtil;
+import play.modules.rabbitmq.util.JSONMapper;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -121,7 +123,14 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 	 * @param message
 	 *            the message
 	 */
-	protected abstract void consume(Object message);
+	protected abstract void consume(T message);
+	
+	/**
+	 * Gets the message type.
+	 *
+	 * @return the message type
+	 */
+	protected abstract Class getMessageType();
 
 	/**
 	 * Creates the channel.
@@ -196,12 +205,8 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 	 * @throws ClassNotFoundException
 	 *             the class not found exception
 	 */
-	public static Object toObject(byte[] bytes) throws IOException,
-			ClassNotFoundException {
-		// Object object = new ObjectInputStream(new
-		// ByteArrayInputStream(bytes)).readObject();
-		// return object;
-		return new String(bytes);
+	public T toObject(byte[] bytes) throws Exception {
+		return (T)JSONMapper.getObject(this.getMessageType(), bytes);
 	}
 
 }

@@ -18,7 +18,7 @@
  */
 package play.modules.rabbitmq.producer;
 
-import java.io.IOException;
+import java.io.Serializable;
 
 import play.Logger;
 import play.Play;
@@ -26,6 +26,7 @@ import play.jobs.Job;
 import play.modules.rabbitmq.RabbitMQPlugin;
 import play.modules.rabbitmq.stats.StatsService;
 import play.modules.rabbitmq.util.ExceptionUtil;
+import play.modules.rabbitmq.util.JSONMapper;
 
 import com.rabbitmq.client.Channel;
 
@@ -43,7 +44,7 @@ public abstract class RabbitMQPublisher {
 	 * @param message
 	 *            the message
 	 */
-	public static void publish(String queueName, String message) {
+	public static void publish(String queueName, Object message) {
 		new RabbitMQPublisherJob(queueName, message).now();
 	}
 
@@ -53,7 +54,7 @@ public abstract class RabbitMQPublisher {
 	public static class RabbitMQPublisherJob extends Job {
 
 		/** The message. */
-		private String message;
+		private Object message;
 
 		/** The queue name. */
 		private String queueName;
@@ -66,7 +67,7 @@ public abstract class RabbitMQPublisher {
 		 * @param message
 		 *            the message
 		 */
-		public RabbitMQPublisherJob(String queueName, String message) {
+		public RabbitMQPublisherJob(String queueName, Object message) {
 			this.queueName = queueName;
 			this.message = message;
 		}
@@ -96,8 +97,7 @@ public abstract class RabbitMQPublisher {
 				}
 
 				// Publish Message
-				channel.basicPublish("", this.queueName, null, this
-						.getBytes(this.message));
+				channel.basicPublish("", this.queueName, null, JSONMapper.getBytes(this.message));
 
 				// Update Stats
 				boolean success = true;
@@ -111,30 +111,6 @@ public abstract class RabbitMQPublisher {
 				boolean success = false;
 				StatsService.producerUpdate(this.queueName, 1l, success, 0);
 			}
-		}
-
-		/**
-		 * Gets the bytes.
-		 * 
-		 * @param message
-		 *            the message
-		 * @return the bytes
-		 * @throws IOException
-		 *             Signals that an I/O exception has occurred.
-		 */
-		public byte[] getBytes(String message) throws IOException {
-			// Serialize to a byte array
-			// ByteArrayOutputStream bos = new ByteArrayOutputStream();
-			// ObjectOutput out = new ObjectOutputStream(bos);
-			// out.writeObject(message);
-			// out.close();
-
-			// Get the bytes of the serialized object
-			// byte[] bytes = bos.toByteArray();
-
-			// Return Bytes
-			byte[] bytes = message.getBytes();
-			return bytes;
 		}
 
 	}

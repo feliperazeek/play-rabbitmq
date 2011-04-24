@@ -1,15 +1,15 @@
 # This file defines all module routes (Higher priority routes first)
 #
 # import these routes in the main app as :
-# *     /                       module:play-rabbitmq
+*     /                       module:rabbitmq
 #
 # ~~~~
 
-GET     /?                      Module.index
+GET  	/  										RabbitMQStats.index
+GET  	/queue/{queueName}/stats  				RabbitMQStats.queueStats
+GET  	/queue/{queueName}/producer/success  	RabbitMQStats.producerSuccess
+GET  	/queue/{queueName}/producer/failed  	RabbitMQStats.producerFailed
+GET  	/queue/{queueName}/consumer/success  	RabbitMQStats.consumerSuccess
+GET  	/queue/{queueName}/consumer/failed  	RabbitMQStats.consumerFailed
 
-GET  /rabbitmq  									RabbitMQStats.index
-GET  /rabbitmq/queue/{queueName}/stats  			RabbitMQStats.queueStats
-GET  /rabbitmq/queue/{queueName}/producer/success  	RabbitMQStats.producerSuccess
-GET  /rabbitmq/queue/{queueName}/producer/failed  	RabbitMQStats.producerFailed
-GET  /rabbitmq/queue/{queueName}/consumer/success  	RabbitMQStats.consumerSuccess
-GET  /rabbitmq/queue/{queueName}/consumer/failed  	RabbitMQStats.consumerFailed
+*       /{controller}/{action}                  {controller}.{action}

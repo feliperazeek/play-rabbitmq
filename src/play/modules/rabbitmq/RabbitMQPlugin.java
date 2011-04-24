@@ -30,7 +30,6 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 
-import controllers.RabbitMQStats;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -91,7 +90,7 @@ public class RabbitMQPlugin extends PlayPlugin {
 	 * @return the host
 	 */
 	public static String getHost() {
-		String s = Play.configuration.getProperty("/");
+		String s = Play.configuration.getProperty("rabbitmq.host");
 		if (s == null) {
 			return "localhost";
 		}

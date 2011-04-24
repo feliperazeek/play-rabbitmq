@@ -25,19 +25,18 @@ import play.modules.rabbitmq.consumer.RabbitMQConsumer;
 /**
  * The Class RabbitMQSampleConsumer.
  */
-//You need to uncomment the line below to allow the job to get triggered
-//@OnApplicationStart(async = true)
-public class RabbitMQSampleConsumer extends RabbitMQConsumer {
+// You need to uncomment the line below to allow the job to get triggered
+// @OnApplicationStart(async = true)
+public class RabbitMQSampleConsumer extends RabbitMQConsumer<SampleMessage> {
+
 
 	/**
-	 * Sample Consumer.
+	 * Consume Message
 	 * 
-	 * @param message
-	 *            the message
 	 * @see play.modules.rabbitmq.consumer.RabbitMQConsumer#consume(java.lang.Object)
 	 */
 	@Override
-	protected void consume(Object message) {
+	protected void consume(SampleMessage message) {
 		System.out.println("******************************");
 		System.out.println("* Message Consumed: " + message);
 		System.out.println("******************************");
@@ -52,5 +51,13 @@ public class RabbitMQSampleConsumer extends RabbitMQConsumer {
 	@Override
 	protected String queue() {
 		return "myQueue";
+	}
+	
+	/**
+	 * Return message type
+	 * @see play.modules.rabbitmq.consumer.RabbitMQConsumer#getMessageType()
+	 */
+	protected Class getMessageType() {
+		return SampleMessage.class;
 	}
 }

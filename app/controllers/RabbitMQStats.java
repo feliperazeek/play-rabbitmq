@@ -22,8 +22,7 @@ public class RabbitMQStats extends Controller {
 	 *
 	 * @param queueName the queue name
 	 */
-	public static void queueStats() {
-		String queueName = "myQueue";
+	public static void queueStats(String queueName) {
 		Stats stats = StatsService.queueStats(queueName);
 		long producerSuccess = 0l;
 		long producerFailed = 0l;
