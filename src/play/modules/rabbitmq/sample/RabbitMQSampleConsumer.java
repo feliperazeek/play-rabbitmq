@@ -25,7 +25,8 @@ import play.modules.rabbitmq.consumer.RabbitMQConsumer;
 /**
  * The Class RabbitMQSampleConsumer.
  */
-@OnApplicationStart(async = true)
+//You need to uncomment the line below to allow the job to get triggered
+//@OnApplicationStart(async = true)
 public class RabbitMQSampleConsumer extends RabbitMQConsumer {
 
 	/**

@@ -13,7 +13,8 @@ import play.modules.rabbitmq.producer.RabbitMQFirehose;
 /**
  * The Class RabbitMQSampleFirehose.
  */
-@OnApplicationStart(async = true)
+// You need to uncomment the line below to allow the job to get triggered
+// @OnApplicationStart(async = true)
 public class RabbitMQSampleFirehose extends RabbitMQFirehose {
 
 	/**
