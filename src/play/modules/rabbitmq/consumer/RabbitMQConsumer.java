@@ -129,15 +129,28 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 	 * @return the channel
 	 */
 	private Channel createChannel() {
+		// Counter that keeps track of number of retries
 		int attempts = 0;
+		
+		// Get Plugin
 		RabbitMQPlugin plugin = Play.plugin(RabbitMQPlugin.class);
+		
+		// Log Debug
 		Logger.info("Initializing connections to RabbitMQ instance (%s:%s)",
 				RabbitMQPlugin.getHost(), RabbitMQPlugin.getPort());
+		
+		// Create Channel
 		this.channel = plugin.createChannel();
 
+		// Start Daemon
 		while (true) {
+			// Add to the number of retries
 			attempts++;
+			
+			// Log Debug
 			Logger.debug("Retry " + attempts);
+			
+			// Get Next Delivery Message
 			try {
 				// RabbitMQMessageListener listener =
 				// this.getClass().getSuperclass().getAnnotation(RabbitMQMessageListener.class);
@@ -145,23 +158,25 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 				// throw new
 				// RuntimeException("Please define annotation @RabbitMQMessageListener.");
 				// }
+				
+				// Define Queue Params
 				this.consumer = new QueueingConsumer(this.channel);
 				this.channel.exchangeDeclare(this.queue(), "direct", true);
-				this.channel.queueDeclare(this.queue(), true, false, false,
-						null);
-				this.channel
-						.queueBind(this.queue(), this.queue(), this.queue());
+				this.channel.queueDeclare(this.queue(), true, false, false, null);
+				this.channel.queueBind(this.queue(), this.queue(), this.queue());
 				this.channel.basicConsume(this.queue(), false, this.consumer);
 
+				// Log Debug
 				Logger.info("RabbitMQ Task Channel Available: " + this.channel);
 
+				// Return Channel
 				return this.channel;
 
 			} catch (Throwable t) {
-				Logger
-						.error(
-								"Error establishing a connection to RabbitMQ, will keep retrying - Exception: %s",
-								ExceptionUtil.getStackTrace(t));
+				// Log Debug
+				Logger.error("Error establishing a connection to RabbitMQ, will keep retrying - Exception: %s", ExceptionUtil.getStackTrace(t));
+				
+				// Sleep a little while before retrying
 				try {
 					Thread.sleep(1000 * 10);
 				} catch (InterruptedException ex) {

@@ -1,12 +1,9 @@
-h1. Play! Framework RabbitMQ Module
-by Felipe Oliveira (http://mashup.fm)
-
+h2. Play! Framework RabbitMQ Module, by Felipe Oliveira (http://mashup.fm)
 
 
 1) Installation
 
 play install rabbitmq
-
 
 
 2) Configuration
@@ -18,14 +15,12 @@ rabbitmq.password=guest
 rabbitmq.vhost=/
 
 
-
 3) Publishing a Message
 
 public static void publish(String q) {
 	RabbitMQPublisher.publish("myQueue", q);
     render(q);
 }
-
 
 
 4) Creating a Message Consumer
