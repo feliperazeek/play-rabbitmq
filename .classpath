@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="views/**" kind="src" path="app"/>
-	<classpathentry kind="src" path="src"/>
+	
 	<classpathentry kind="src" path="resteasy-1.3.1"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="/Users/flipflop/play-1.2/framework/play-1.2.jar"/>
 	<classpathentry kind="lib" path="/Users/flipflop/play-rabbitmq/lib/google-gson-stream-1.6.jar"/>
 	<classpathentry kind="lib" path="/Users/flipflop/play-rabbitmq/lib/jackson-core-lgpl-1.7.5.jar"/>
 	<classpathentry kind="lib" path="/Users/flipflop/play-rabbitmq/lib/jackson-mapper-lgpl-1.7.5.jar"/>
+	<classpathentry kind="lib" path="/Users/flipflop/play-rabbitmq/lib/json-rpc-1.0.jar"/>
 	<classpathentry kind="lib" path="/Users/flipflop/play-rabbitmq/lib/org.restlet.jar"/>
 	<classpathentry kind="lib" path="/Users/flipflop/play-rabbitmq/lib/play-rabbitmq.jar"/>
 	<classpathentry kind="lib" path="/Users/flipflop/play-rabbitmq/lib/rabbitmq-client.jar"/>
@@ -75,5 +76,6 @@
 	<classpathentry kind="lib" path="/Users/flipflop/play-1.2/framework/lib/slf4j-log4j12-1.6.1.jar"/>
 	<classpathentry kind="lib" path="/Users/flipflop/play-1.2/framework/lib/snakeyaml-1.7.jar"/>
 	<classpathentry kind="lib" path="/Users/flipflop/play-1.2/framework/lib/xstream-1.3.jar"/>
+	
 	<classpathentry kind="output" path="eclipse/classes"/>
 </classpath>

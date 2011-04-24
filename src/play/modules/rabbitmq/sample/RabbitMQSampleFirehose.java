@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.codehaus.jettison.json.JSONObject;
+import org.json.JSONObject;
 
 import play.jobs.OnApplicationStart;
 import play.modules.rabbitmq.producer.RabbitMQFirehose;

@@ -4,16 +4,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-
 // TODO: Auto-generated Javadoc
 /**
  * The Class StatsService.
  */
-@Path("/rabbitmq")
 public class StatsService {
 	/** The Constant instrumentedTasks. */
 	protected static final ArrayList<String> instrumentedTasks = new ArrayList<String>();
@@ -43,10 +37,7 @@ public class StatsService {
 	 *            the queue name
 	 * @return the stats
 	 */
-	// @GET
-	// @Path("/queue/{queue}/stats")
-	// @Produces("application/json")
-	public Stats queueStats(@PathParam("queue") String queueName) {
+	public Stats queueStats(String queueName) {
 		Stats stats = new Stats();
 		if ( consumerSuccessCount != null && consumerSuccessCount.containsKey(queueName) ) {
 			stats.setConsumerSuccessCount(new Long(consumerSuccessCount.get(queueName)));
