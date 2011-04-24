@@ -9,6 +9,7 @@ import java.util.LinkedList;
  * The Class StatsService.
  */
 public class StatsService {
+	
 	/** The Constant instrumentedTasks. */
 	protected static final ArrayList<String> instrumentedTasks = new ArrayList<String>();
 
@@ -37,7 +38,7 @@ public class StatsService {
 	 *            the queue name
 	 * @return the stats
 	 */
-	public Stats queueStats(String queueName) {
+	public static Stats queueStats(String queueName) {
 		Stats stats = new Stats();
 		if ( consumerSuccessCount != null && consumerSuccessCount.containsKey(queueName) ) {
 			stats.setConsumerSuccessCount(new Long(consumerSuccessCount.get(queueName)));

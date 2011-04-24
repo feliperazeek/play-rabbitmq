@@ -24,10 +24,13 @@ import play.Logger;
 import play.Play;
 import play.PlayPlugin;
 import play.modules.rabbitmq.util.ExceptionUtil;
+import play.mvc.Router;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+
+import controllers.RabbitMQStats;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -88,7 +91,7 @@ public class RabbitMQPlugin extends PlayPlugin {
 	 * @return the host
 	 */
 	public static String getHost() {
-		String s = Play.configuration.getProperty("rabbitmq.host");
+		String s = Play.configuration.getProperty("/");
 		if (s == null) {
 			return "localhost";
 		}

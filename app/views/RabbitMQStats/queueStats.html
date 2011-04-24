@@ -1,0 +1,39 @@
+<h1>RabbitMQ Queue Stats: ${queueName}</h1>
+
+<h2>Producer</h2>
+<p id="producerSuccess">
+    <span>Successful: <strong>${producerSuccess}</strong></span>
+</p>
+<script type="text/javascript" charset="utf-8">
+    setInterval(function() {
+        $('section').load('@{producerSuccess()} #producerSuccess')
+    }, 1000)
+</script>
+
+<p id="producerFailed">
+    <span>Failures: <strong>${producerFailed}</strong></span>
+</p>
+<script type="text/javascript" charset="utf-8">
+    setInterval(function() {
+        $('section').load('@{producerFailed()} #producerFailed')
+    }, 1000)
+</script>         
+
+<h2>Consumer</h2>
+<p id="consumerSuccess">
+    <span>Successful: <strong>${consumerSuccess}</strong></span>
+</p>
+<script type="text/javascript" charset="utf-8">
+    setInterval(function() {
+        $('section').load('@{consumerSuccess()} #consumerSuccess')
+    }, 1000)
+</script>
+
+<p id="consumerFailed">
+    <span>Failures: <strong>${consumerFailed}</strong></span>
+</p>
+<script type="text/javascript" charset="utf-8">
+    setInterval(function() {
+        $('section').load('@{consumerFailed()} #consumerFailed')
+    }, 1000)
+</script>                                  

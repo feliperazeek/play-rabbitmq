@@ -7,4 +7,9 @@
 
 GET     /?                      Module.index
 
-GET		/rabbitmq/queue/{queue}/stats	RabbitMQStats.queue
+GET  /rabbitmq  									RabbitMQStats.index
+GET  /rabbitmq/queue/{queueName}/stats  			RabbitMQStats.queueStats
+GET  /rabbitmq/queue/{queueName}/producer/success  	RabbitMQStats.producerSuccess
+GET  /rabbitmq/queue/{queueName}/producer/failed  	RabbitMQStats.producerFailed
+GET  /rabbitmq/queue/{queueName}/consumer/success  	RabbitMQStats.consumerSuccess
+GET  /rabbitmq/queue/{queueName}/consumer/failed  	RabbitMQStats.consumerFailed
