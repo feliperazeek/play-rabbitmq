@@ -1,19 +1,32 @@
-h2. Play! Framework RabbitMQ Module, by Felipe Oliveira (http://mashup.fm)
+h1. Play! Framework RabbitMQ Module
+
+h2. Felipe Oliveira
+http://mashup.fm
+http://geeks.aretotally.in
+http://twitter.com/_felipera
 
 
-h3. Installation
+h3. 1) Installation
 
 play install rabbitmq
 
 
 
-h3. Configuration
+h3. 2) RabbitMQ
+
+Download RabbitMQ from http://www.rabbitmq.com/server.html.
+Unzip the distribution, go to folder sbin and run "./rabbitmq-server".
+It should be running on port 5762 by default. The default user "guest" and password is "guest".
+
+
+
+h3. 3) Configuration
 
 rabbitmq.host=localhost
 rabbitmq.port=5672
-rabbitmq.userName=guest
-rabbitmq.password=guest
 rabbitmq.vhost=/
+rabbitmq.user=guest
+rabbitmq.password=guest
 rabbitmq.exchangeType=direct
 rabbitmq.durable=true
 rabbitmq.autoAck=false
@@ -21,7 +34,7 @@ rabbit.basicQos=true
 
 
 
-h3. Define Message that will be used by the Queue (just a simple POJO)
+h3. 4) Define Message that will be used by the Queue (just a simple POJO)
 
 public class SampleMessage implements Serializable {
 
@@ -63,7 +76,7 @@ public class SampleMessage implements Serializable {
 }
 
 
-h3. Publish a Message
+h3. 5) Publish a Message
 
 public static void publish(SampleMessage q) {
 	RabbitMQPublisher.publish("myQueue", q);
@@ -72,7 +85,7 @@ public static void publish(SampleMessage q) {
 
 
 
-h3. Creating a Message Consumer
+h3. 6) Creating a Message Consumer
 
 @OnApplicationStart(async = true)
 public class RabbitMQSampleConsumer extends RabbitMQConsumer<SampleMessage> {
@@ -92,9 +105,11 @@ public class RabbitMQSampleConsumer extends RabbitMQConsumer<SampleMessage> {
 	}
 }
 
+* Please note this is a Play! job so you can start it manualy or you can use the other annotations provided by Play! like @On or @Every. More information available at http://www.playframework.org/documentation/1.2/jobs.
 
 
-h3. Firehose - Another way to publish messages in batch
+
+h3. 7) Firehose - Another way to publish messages in batch
 
 @OnApplicationStart(async = true)
 public class RabbitMQSampleFirehose extends RabbitMQFirehose<SampleMessage> {
@@ -122,3 +137,11 @@ public class RabbitMQSampleFirehose extends RabbitMQFirehose<SampleMessage> {
 	}
 
 }
+
+* Please note this is a Play! job so you can start it manualy or you can use the other annotations provided by Play! like @On or @Every. More information available at http://www.playframework.org/documentation/1.2/jobs.
+
+
+
+h3. Source Code
+
+The source code is available on Github at https://github.com/feliperazeek/play-rabbitmq.
