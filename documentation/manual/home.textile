@@ -30,7 +30,7 @@ rabbitmq.password=guest
 rabbitmq.exchangeType=direct
 rabbitmq.durable=true
 rabbitmq.autoAck=false
-rabbit.basicQos=true
+rabbitmq.basicQos=true
 
 
 
