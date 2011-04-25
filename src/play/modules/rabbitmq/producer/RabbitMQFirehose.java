@@ -46,6 +46,12 @@ public abstract class RabbitMQFirehose<T> extends Job {
 					}
 				}
 				
+				// If null stop process
+				if ( items == null ) {
+					Logger.warn("No data available from firehose %s - quitting process...", this);
+					return;
+				}
+				
 				// If this batch didn't return the max number of entries put the process to sleep for a litle while
 				if (itemsCount < batchSize()) {
 					Thread.sleep(sleepInBetweenBatches());

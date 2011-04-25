@@ -14,6 +14,10 @@ rabbitmq.port=5672
 rabbitmq.userName=guest
 rabbitmq.password=guest
 rabbitmq.vhost=/
+rabbitmq.exchangeType=direct
+rabbitmq.durable=true
+rabbitmq.autoAck=false
+rabbit.basicQos=true
 
 
 
@@ -70,6 +74,7 @@ public static void publish(SampleMessage q) {
 
 h3. Creating a Message Consumer
 
+@OnApplicationStart(async = true)
 public class RabbitMQSampleConsumer extends RabbitMQConsumer<SampleMessage> {
 
 	protected void consume(SampleMessage message) {
