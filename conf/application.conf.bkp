@@ -9,8 +9,6 @@ application.name=rabbitmq
 application.mode=dev
 %prod.application.mode=prod
 
-rabbitmq.host=poetiqu.es
-
 # Secret key
 # ~~~~~
 # The secret key is used to secure cryptographics functions
@@ -26,7 +24,6 @@ application.secret=ubfI4TFcShvX13EIX1X3TyqgYQ9G8FSfm0q66OV9H6S1CdhSRd9lIxc16ZNnh
 #
 # Keep the next line as is to help the play script to manage modules.
 # ---- MODULES ----
-module.resteasy=${play.path}/modules/resteasy-1.3.1
 
 # i18n
 # ~~~~~

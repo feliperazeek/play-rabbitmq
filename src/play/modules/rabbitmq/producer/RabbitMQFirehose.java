@@ -4,7 +4,6 @@ import java.util.List;
 
 import play.Logger;
 import play.jobs.Job;
-import play.modules.rabbitmq.stats.StatsService;
 import play.modules.rabbitmq.util.ExceptionUtil;
 
 // TODO: Auto-generated Javadoc
@@ -22,39 +21,40 @@ public abstract class RabbitMQFirehose<T> extends Job {
 	public void doJob() {
 		// Start Daemon
 		while (true) {
-			// Do Work               
+			// Do Work
 			try {
 				// Init counter that will keep track of each message published
 				int itemsCount = 0;
-				
+
 				// Get Data
-				List<T> items = getData(batchSize());
-				
+				List<T> items = this.getData(this.batchSize());
+
 				// Check List
-				if (items != null && items.size() > 0) {
+				if ((items != null) && (items.size() > 0)) {
 					// Set count on item
 					itemsCount = items.size();
-					
+
 					// Publish each message
 					for (T item : items) {
 						try {
-							RabbitMQPublisher.publish(queueName(), item);
-							
+							RabbitMQPublisher.publish(this.queueName(), item);
+
 						} catch (Throwable t) {
 							Logger.error(ExceptionUtil.getStackTrace(t));
 						}
 					}
 				}
-				
+
 				// If null stop process
-				if ( items == null ) {
+				if (items == null) {
 					Logger.warn("No data available from firehose %s - quitting process...", this);
 					return;
 				}
-				
-				// If this batch didn't return the max number of entries put the process to sleep for a litle while
-				if (itemsCount < batchSize()) {
-					Thread.sleep(sleepInBetweenBatches());
+
+				// If this batch didn't return the max number of entries put the
+				// process to sleep for a litle while
+				if (itemsCount < this.batchSize()) {
+					Thread.sleep(this.sleepInBetweenBatches());
 				}
 
 			} catch (Throwable t) {

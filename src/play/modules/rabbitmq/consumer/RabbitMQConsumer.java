@@ -18,18 +18,16 @@
  */
 package play.modules.rabbitmq.consumer;
 
-import java.io.IOException;
-
 import play.Logger;
 import play.Play;
 import play.jobs.Job;
 import play.modules.rabbitmq.RabbitMQPlugin;
-import play.modules.rabbitmq.stats.StatsService;
+import play.modules.rabbitmq.stats.StatisticsEvent;
+import play.modules.rabbitmq.stats.StatisticsStream;
 import play.modules.rabbitmq.util.ExceptionUtil;
 import play.modules.rabbitmq.util.JSONMapper;
 
 import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.QueueingConsumer;
 
 // TODO: Auto-generated Javadoc
@@ -64,21 +62,60 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 	private void goGetHerSon() {
 		// Get Plugin
 		RabbitMQPlugin plugin = Play.plugin(RabbitMQPlugin.class);
-		
+
 		// Define Channel
 		Channel channel = null;
 		QueueingConsumer consumer = null;
-		
+
 		// Get Channel
 		while (true) {
 			try {
-				channel = this.createChannel(plugin);
-				consumer = this.createConsumer(channel, plugin);
-				if ( channel != null && consumer != null ) {
-					break;
+				// Create Channel
+				if (channel == null) {
+					channel = this.createChannel(plugin);
 				}
-				
+
+				// Create Consumer
+				if (consumer == null) {
+					consumer = this.createConsumer(channel, plugin);
+				}
+
+				// Get Task
+				QueueingConsumer.Delivery task = null;
+				task = consumer.nextDelivery();
+
+				// Date Night
+				if ((task != null) && (task.getBody() != null)) {
+					try {
+						// Start Timer
+						long start = System.nanoTime();
+
+						// Go have some fun with her
+						T message = this.toObject(task.getBody());
+						new RabbitMQMessageConsumerJob(this, message).now();
+
+						// Now tell Daddy everything is cool
+						channel.basicAck(task.getEnvelope().getDeliveryTag(), false);
+
+						// Execution Time
+						long executionTime = System.nanoTime() - start;
+						Logger.info("Message %s has been consumed from queue %s (execution time: %s ms)", message, this.queue(), executionTime);
+
+						// Update Stats
+						StatisticsStream.add(new StatisticsEvent(this.queue(), StatisticsEvent.Type.CONSUMER, StatisticsEvent.Status.SUCCESS));
+
+					} catch (Throwable t) {
+						// Log Debug
+						Logger.error("Error trying to acknowledge message delivery - Error: %s", ExceptionUtil.getStackTrace(t));
+
+						// Update Stats
+						StatisticsStream.add(new StatisticsEvent(this.queue(), StatisticsEvent.Type.CONSUMER, StatisticsEvent.Status.ERROR));
+					}
+
+				}
 			} catch (Throwable t) {
+				channel = null;
+				consumer = null;
 				Logger.error("Error creating consumer channel to RabbitMQ, retrying in a few seconds. Exception: %s", ExceptionUtil.getStackTrace(t));
 				try {
 					Thread.sleep(5000);
@@ -87,57 +124,45 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 				}
 			}
 		}
+	}
 
-		// The endless life of a true playa!
-		while (true) {
-			// Show some interest
-			QueueingConsumer.Delivery task = null;
+	/**
+	 * The Class RabbitMQMessageConsumerJob.
+	 * 
+	 * @param <T>
+	 *            the generic type
+	 */
+	protected static class RabbitMQMessageConsumerJob<T> extends Job<T> {
 
-			// Build the relationship
-			try {				
-				// Ask her out
-				if ( consumer != null ) {
-					task = consumer.nextDelivery();
-				}
+		/** The message. */
+		private T message;
 
-			} catch (Throwable t) {
-				// Bitch!
-				Logger.error(ExceptionUtil.getStackTrace(t));
-				continue;
-			}
+		/** The consumer. */
+		private RabbitMQConsumer consumer;
 
-			// Date Night
-			if ((task != null) && (task.getBody() != null)) {
-				try {
-					// Start Timer
-					long start = System.nanoTime();
-					
-					// Go have some fun with her
-					T message = toObject(task.getBody());
-					this.consume(message);
-
-					// Now tell Daddy everything is cool
-					channel.basicAck(task.getEnvelope().getDeliveryTag(), false);
-					
-					// Execution Time
-					long executionTime = System.nanoTime() - start;
-					Logger.info("Message %s has been consumed from queue %s (execution time: %s ms)", message, this.queue(), executionTime);
-
-					// Update Stats
-					boolean success = true;
-					StatsService.producerUpdate(this.queue(), executionTime, success, 0);
-
-				} catch (Throwable t) {
-					// Log Debug
-					Logger.error("Error trying to acknowledge message delivery - Error: %s", ExceptionUtil.getStackTrace(t));
-					
-					// Update Stats
-					boolean success = false;
-					StatsService.producerUpdate(this.queue(), 0l, success, 0);
-				}
-
-			}
+		/**
+		 * Instantiates a new rabbit mq message consumer job.
+		 * 
+		 * @param consumer
+		 *            the consumer
+		 * @param message
+		 *            the message
+		 */
+		public RabbitMQMessageConsumerJob(RabbitMQConsumer consumer, T message) {
+			this.consumer = consumer;
+			this.message = message;
 		}
+
+		/**
+		 * Consumer Message
+		 * 
+		 * @see play.jobs.Job#doJob()
+		 */
+		@Override
+		public void doJob() {
+			this.consumer.consume(this.message);
+		}
+
 	}
 
 	/**
@@ -147,20 +172,22 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 	 *            the message
 	 */
 	protected abstract void consume(T message);
-	
+
 	/**
 	 * Gets the message type.
-	 *
+	 * 
 	 * @return the message type
 	 */
 	protected abstract Class getMessageType();
-	
+
 	/**
 	 * Creates the channel.
-	 *
-	 * @param plugin the plugin
+	 * 
+	 * @param plugin
+	 *            the plugin
 	 * @return the channel
-	 * @throws Exception the exception
+	 * @throws Exception
+	 *             the exception
 	 */
 	protected Channel createChannel(RabbitMQPlugin plugin) throws Exception {
 		// Get Plugin
@@ -170,11 +197,14 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 
 	/**
 	 * Creates the channel.
-	 *
-	 * @param channel the channel
-	 * @param plugin the plugin
+	 * 
+	 * @param channel
+	 *            the channel
+	 * @param plugin
+	 *            the plugin
 	 * @return the channel
-	 * @throws Exception the exception
+	 * @throws Exception
+	 *             the exception
 	 */
 	protected QueueingConsumer createConsumer(Channel channel, RabbitMQPlugin plugin) throws Exception {
 		// Get Plugin
@@ -190,13 +220,15 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 
 	/**
 	 * To object.
-	 *
-	 * @param bytes the bytes
+	 * 
+	 * @param bytes
+	 *            the bytes
 	 * @return the object
-	 * @throws Exception the exception
+	 * @throws Exception
+	 *             the exception
 	 */
 	protected T toObject(byte[] bytes) throws Exception {
-		return (T)JSONMapper.getObject(this.getMessageType(), bytes);
+		return (T) JSONMapper.getObject(this.getMessageType(), bytes);
 	}
 
 }

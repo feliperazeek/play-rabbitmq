@@ -18,13 +18,12 @@
  */
 package play.modules.rabbitmq.producer;
 
-import java.io.Serializable;
-
 import play.Logger;
 import play.Play;
 import play.jobs.Job;
 import play.modules.rabbitmq.RabbitMQPlugin;
-import play.modules.rabbitmq.stats.StatsService;
+import play.modules.rabbitmq.stats.StatisticsEvent;
+import play.modules.rabbitmq.stats.StatisticsStream;
 import play.modules.rabbitmq.util.ExceptionUtil;
 import play.modules.rabbitmq.util.JSONMapper;
 
@@ -79,45 +78,53 @@ public abstract class RabbitMQPublisher {
 		 */
 		@Override
 		public void doJob() {
+			// Do Work
 			try {
 				// Start Timer
 				long start = System.nanoTime();
-				
+
 				// Get Producer Information
-				RabbitMQProducer producer = this.getClass().getAnnotation(
-						RabbitMQProducer.class);
+				RabbitMQProducer producer = this.getClass().getAnnotation(RabbitMQProducer.class);
 				if ((producer == null) && (this.queueName == null)) {
-					throw new RuntimeException(
-							"Please define annotation @RabbitMQProducer.");
+					throw new RuntimeException("Please define annotation @RabbitMQProducer.");
 				}
 
 				// Create Channel
 				RabbitMQPlugin plugin = Play.plugin(RabbitMQPlugin.class);
 				Channel channel = plugin.createChannel(this.queueName);
 				if (channel == null) {
-					throw new RuntimeException(
-							"Error creating a communication channel with RabbitMQ. Please verify the health of your RabbitMQ node and check your configuration.");
+					throw new RuntimeException("Error creating a communication channel with RabbitMQ. Please verify the health of your RabbitMQ node and check your configuration.");
 				}
 
 				// Publish Message
-				channel.basicPublish("", this.queueName, plugin.getBasicProperties(), JSONMapper.getBytes(this.message));
-				
+				channel.basicPublish("", this.queueName, plugin.getBasicProperties(), this.getBytes());
+
 				// Execution Time
 				long executionTime = System.nanoTime() - start;
 				Logger.info("Message %s has been published to queue %s (execution time: %s ms)", this.message, this.queueName, executionTime);
 
 				// Update Stats
-				boolean success = true;
-				StatsService.producerUpdate(this.queueName, executionTime, success, 0);
+				StatisticsStream.add(new StatisticsEvent(this.queueName, StatisticsEvent.Type.PRODUCER, StatisticsEvent.Status.SUCCESS));
 
 			} catch (Throwable t) {
 				// Handle Exception
 				Logger.error(ExceptionUtil.getStackTrace(t));
 
 				// Update Stats
-				boolean success = false;
-				StatsService.producerUpdate(this.queueName, 0l, success, 0);
+				StatisticsStream.add(new StatisticsEvent(this.queueName, StatisticsEvent.Type.CONSUMER, StatisticsEvent.Status.ERROR));
 			}
+		}
+
+		/**
+		 * Gets the bytes.
+		 * 
+		 * @return the bytes
+		 * @throws Exception
+		 *             the exception
+		 */
+		private byte[] getBytes() throws Exception {
+			return JSONMapper.getBytes(this.message);
+			// return MessagePack.pack(this.message);
 		}
 
 	}

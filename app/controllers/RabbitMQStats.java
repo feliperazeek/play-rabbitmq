@@ -1,7 +1,27 @@
+/** 
+ * Copyright 2011 The Apache Software Foundation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ * @author Felipe Oliveira (http://mashup.fm)
+ * 
+ */
 package controllers;
 
-import play.modules.rabbitmq.stats.Stats;
-import play.modules.rabbitmq.stats.StatsService;
+import play.modules.rabbitmq.sample.RabbitMQSampleConsumer;
+import play.modules.rabbitmq.sample.RabbitMQSampleFirehose;
+import play.modules.rabbitmq.stats.StatisticsEvent;
+import play.modules.rabbitmq.stats.StatisticsService;
 import play.mvc.Controller;
 
 // TODO: Auto-generated Javadoc
@@ -9,88 +29,59 @@ import play.mvc.Controller;
  * The Class RabbitMQStats.
  */
 public class RabbitMQStats extends Controller {
-	
+
+	/** The service. */
+	private static StatisticsService service = new StatisticsService();
+
 	/**
 	 * Index.
 	 */
 	public static void index() {
 		render();
 	}
-	
+
+	/**
+	 * Stream.
+	 */
+	public static void stream() {
+		render();
+	}
+
 	/**
 	 * Queue stats.
-	 *
-	 * @param queueName the queue name
+	 * 
+	 * @param queueName
+	 *            the queue name
 	 */
 	public static void queueStats(String queueName) {
-		Stats stats = StatsService.queueStats(queueName);
-		long producerSuccess = 0l;
-		long producerFailed = 0l;
-		long consumerSuccess = 0l;
-		long consumerFailed = 0l;
-		if ( stats != null ) {
-			producerSuccess = stats.getProducerSuccessCount();
-			producerFailed = stats.getProducerFailedCount();
-			consumerSuccess = stats.getConsumerSuccessCount();
-			consumerFailed = stats.getConsumerFailedCount();
-		}
+		long producerSuccess = service.get(queueName, StatisticsEvent.Type.PRODUCER, StatisticsEvent.Status.SUCCESS);
+		long producerFailed = service.get(queueName, StatisticsEvent.Type.PRODUCER, StatisticsEvent.Status.ERROR);
+		long consumerSuccess = service.get(queueName, StatisticsEvent.Type.CONSUMER, StatisticsEvent.Status.SUCCESS);
+		long consumerFailed = service.get(queueName, StatisticsEvent.Type.CONSUMER, StatisticsEvent.Status.ERROR);
 		render(queueName, producerSuccess, producerFailed, consumerSuccess, consumerFailed);
 	}
-	
+
 	/**
-	 * Queue consumer failed.
-	 *
-	 * @param queueName the queue name
+	 * Queue stats details.
+	 * 
+	 * @param queueName
+	 *            the queue name
 	 */
-	public static void queueConsumerFailed(String queueName) {
-		Stats stats = StatsService.queueStats(queueName);
-		long consumerFailed = 0l;
-		if ( stats != null ) {
-			consumerFailed = stats.getConsumerFailedCount();
-		}
-		render(consumerFailed);
+	public static void queueStatsDetails(String queueName) {
+		long producerSuccess = service.get(queueName, StatisticsEvent.Type.PRODUCER, StatisticsEvent.Status.SUCCESS);
+		long producerFailed = service.get(queueName, StatisticsEvent.Type.PRODUCER, StatisticsEvent.Status.ERROR);
+		long consumerSuccess = service.get(queueName, StatisticsEvent.Type.CONSUMER, StatisticsEvent.Status.SUCCESS);
+		long consumerFailed = service.get(queueName, StatisticsEvent.Type.CONSUMER, StatisticsEvent.Status.ERROR);
+		render(queueName, producerSuccess, producerFailed, consumerSuccess, consumerFailed);
 	}
-	
+
 	/**
-	 * Queue producer failed.
-	 *
-	 * @param queueName the queue name
+	 * Fire sample firehose.
 	 */
-	public static void queueProducerFailed(String queueName) {
-		Stats stats = StatsService.queueStats(queueName);
-		long producerFailed = 0l;
-		if ( stats != null ) {
-			producerFailed = stats.getProducerFailedCount();
-		}
-		render(producerFailed);
-	}
-	
-	/**
-	 * Queue consumer success.
-	 *
-	 * @param queueName the queue name
-	 */
-	public static void queueConsumerSuccess(String queueName) {
-		Stats stats = StatsService.queueStats(queueName);
-		long consumerSuccess = 0l;
-		if ( stats != null ) {
-			consumerSuccess = stats.getConsumerSuccessCount();
-		}
-		render(consumerSuccess);
-	}
-	
-	/**
-	 * Queue producer success.
-	 *
-	 * @param queueName the queue name
-	 */
-	public static void queueProducerSuccess(String queueName) {
-		Stats stats = StatsService.queueStats(queueName);
-		long producerSuccess = 0l;
-		if ( stats != null ) {
-			producerSuccess = stats.getProducerSuccessCount();
-		}
-		render(producerSuccess);
+	public static void fireSampleQueue() {
+		new RabbitMQSampleConsumer().now();
+		new RabbitMQSampleFirehose().now();
+		render();
 	}
 
 }
