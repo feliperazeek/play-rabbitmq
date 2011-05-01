@@ -142,6 +142,19 @@ public class RabbitMQSampleFirehose extends RabbitMQFirehose<SampleMessage> {
 
 
 
+h3. 8) Live Stats and Live Streaming
+
+Add the module routes in your routes.conf
+*		/rabbitmq/								module:rabbitmq 
+
+Live Stats and Live Streaming of messages produced and consumed are available at http://localhost:9000/rabbitmq/.
+Live Stats uses Ajax to display the number of successful messages produced and consumed to a queue, errors as well.
+Live Streaming uses WebSockets (requires newer browsers) to stream messages consumed and produced.
+
+* To find out more about WebSockets in the Play! Framework, please visit http://www.playframework.org/documentation/1.2/asynchronous.
+
+
+
 h3. Source Code
 
 The source code is available on Github at https://github.com/feliperazeek/play-rabbitmq.
