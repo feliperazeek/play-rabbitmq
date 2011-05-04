@@ -28,14 +28,14 @@ import java.util.concurrent.ConcurrentHashMap;
  *            the generic type
  */
 public interface StatisticsAction<T> extends play.libs.F.Action<T> {
+	
+	/** The Constant map. */
+	public static ConcurrentHashMap<StatisticsEvent, Ticker> map = new ConcurrentHashMap<StatisticsEvent, Ticker>();
 
 	/**
 	 * The Class TickX.
 	 */
 	public static final class Tick implements StatisticsAction<StatisticsEvent> {
-
-		/** The Constant map. */
-		protected static ConcurrentHashMap<StatisticsEvent, Ticker> map = new ConcurrentHashMap<StatisticsEvent, Ticker>();
 
 		/**
 		 * Find T for X and Tick it!
@@ -45,8 +45,8 @@ public interface StatisticsAction<T> extends play.libs.F.Action<T> {
 		@Override
 		public void invoke(final StatisticsEvent key) {
 			Ticker t = new Ticker();
-			map.putIfAbsent(key, t);
-			t = map.get(key);
+			StatisticsAction.map.putIfAbsent(key, t);
+			t = StatisticsAction.map.get(key);
 			t.tick();
 		}
 	}

@@ -18,7 +18,7 @@
  */
 package play.modules.rabbitmq.sample;
 
-import play.jobs.OnApplicationStart;
+import play.modules.rabbitmq.RabbitMQPlugin;
 import play.modules.rabbitmq.consumer.RabbitMQConsumer;
 
 // TODO: Auto-generated Javadoc
@@ -51,11 +51,26 @@ public class RabbitMQSampleConsumer extends RabbitMQConsumer<SampleMessage> {
 	protected String queue() {
 		return "myQueue";
 	}
-	
+
+	/**
+	 * Number of times we'll try to re-deliver the message if any exception
+	 * happens
+	 * 
+	 * @see play.modules.rabbitmq.consumer.RabbitMQConsumer#retries()
+	 */
+	@Override
+	protected int retries() {
+		// This is the default value defined by "rabbitmq.retries" on
+		// application.conf (please override if you need a new value)
+		return RabbitMQPlugin.retries();
+	}
+
 	/**
 	 * Return message type
+	 * 
 	 * @see play.modules.rabbitmq.consumer.RabbitMQConsumer#getMessageType()
 	 */
+	@Override
 	protected Class getMessageType() {
 		return SampleMessage.class;
 	}

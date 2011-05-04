@@ -22,8 +22,6 @@ import play.Logger;
 import play.Play;
 import play.jobs.Job;
 import play.modules.rabbitmq.RabbitMQPlugin;
-import play.modules.rabbitmq.stats.StatisticsEvent;
-import play.modules.rabbitmq.stats.StatisticsStream;
 import play.modules.rabbitmq.util.ExceptionUtil;
 import play.modules.rabbitmq.util.JSONMapper;
 
@@ -40,130 +38,10 @@ import com.rabbitmq.client.QueueingConsumer;
 public abstract class RabbitMQConsumer<T> extends Job<T> {
 
 	/**
-	 * Let our baby go!.
-	 * 
-	 * @see play.jobs.Job#doJob()
+	 * This is the default value defined by "rabbitmq.retries" on
+	 * application.conf (please override if you need a new value)
 	 */
-	@Override
-	public void doJob() {
-		this.goGetHerSon();
-	}
-
-	/**
-	 * Gets the queue name.
-	 * 
-	 * @return the queue name
-	 */
-	protected abstract String queue();
-
-	/**
-	 * Go get her son.
-	 */
-	private void goGetHerSon() {
-		// Get Plugin
-		RabbitMQPlugin plugin = Play.plugin(RabbitMQPlugin.class);
-
-		// Define Channel
-		Channel channel = null;
-		QueueingConsumer consumer = null;
-
-		// Get Channel
-		while (true) {
-			try {
-				// Create Channel
-				if (channel == null) {
-					channel = this.createChannel(plugin);
-				}
-
-				// Create Consumer
-				if (consumer == null) {
-					consumer = this.createConsumer(channel, plugin);
-				}
-
-				// Get Task
-				QueueingConsumer.Delivery task = null;
-				task = consumer.nextDelivery();
-
-				// Date Night
-				if ((task != null) && (task.getBody() != null)) {
-					try {
-						// Start Timer
-						long start = System.nanoTime();
-
-						// Go have some fun with her
-						T message = this.toObject(task.getBody());
-						new RabbitMQMessageConsumerJob(this, message).now();
-
-						// Now tell Daddy everything is cool
-						channel.basicAck(task.getEnvelope().getDeliveryTag(), false);
-
-						// Execution Time
-						long executionTime = System.nanoTime() - start;
-						Logger.info("Message %s has been consumed from queue %s (execution time: %s ms)", message, this.queue(), executionTime);
-
-						// Update Stats
-						StatisticsStream.add(new StatisticsEvent(this.queue(), StatisticsEvent.Type.CONSUMER, StatisticsEvent.Status.SUCCESS));
-
-					} catch (Throwable t) {
-						// Log Debug
-						Logger.error("Error trying to acknowledge message delivery - Error: %s", ExceptionUtil.getStackTrace(t));
-
-						// Update Stats
-						StatisticsStream.add(new StatisticsEvent(this.queue(), StatisticsEvent.Type.CONSUMER, StatisticsEvent.Status.ERROR));
-					}
-
-				}
-			} catch (Throwable t) {
-				channel = null;
-				consumer = null;
-				Logger.error("Error creating consumer channel to RabbitMQ, retrying in a few seconds. Exception: %s", ExceptionUtil.getStackTrace(t));
-				try {
-					Thread.sleep(5000);
-				} catch (InterruptedException e) {
-					Logger.error(ExceptionUtil.getStackTrace(t));
-				}
-			}
-		}
-	}
-
-	/**
-	 * The Class RabbitMQMessageConsumerJob.
-	 * 
-	 * @param <T>
-	 *            the generic type
-	 */
-	protected static class RabbitMQMessageConsumerJob<T> extends Job<T> {
-
-		/** The message. */
-		private T message;
-
-		/** The consumer. */
-		private RabbitMQConsumer consumer;
-
-		/**
-		 * Instantiates a new rabbit mq message consumer job.
-		 * 
-		 * @param consumer
-		 *            the consumer
-		 * @param message
-		 *            the message
-		 */
-		public RabbitMQMessageConsumerJob(RabbitMQConsumer consumer, T message) {
-			this.consumer = consumer;
-			this.message = message;
-		}
-
-		/**
-		 * Consumer Message
-		 * 
-		 * @see play.jobs.Job#doJob()
-		 */
-		@Override
-		public void doJob() {
-			this.consumer.consume(this.message);
-		}
-
-	}
+	public static int retries = RabbitMQPlugin.retries();
 
 	/**
 	 * Consume.
@@ -172,13 +50,6 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 	 *            the message
 	 */
 	protected abstract void consume(T message);
-
-	/**
-	 * Gets the message type.
-	 * 
-	 * @return the message type
-	 */
-	protected abstract Class getMessageType();
 
 	/**
 	 * Creates the channel.
@@ -216,6 +87,94 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 
 		// Return Channel
 		return consumer;
+	}
+
+	/**
+	 * Let our baby go!.
+	 * 
+	 * @see play.jobs.Job#doJob()
+	 */
+	@Override
+	public void doJob() {
+		this.goGetHerSon();
+	}
+
+	/**
+	 * Gets the message type.
+	 * 
+	 * @return the message type
+	 */
+	protected abstract Class getMessageType();
+
+	/**
+	 * Go get her son.
+	 */
+	private void goGetHerSon() {
+		// Get Plugin
+		RabbitMQPlugin plugin = Play.plugin(RabbitMQPlugin.class);
+
+		// Define Channel
+		Channel channel = null;
+		QueueingConsumer consumer = null;
+
+		// Get Channel
+		while (true) {
+			try {
+				// Create Channel
+				if (channel == null) {
+					channel = this.createChannel(plugin);
+				}
+
+				// Create Consumer
+				if (consumer == null) {
+					consumer = this.createConsumer(channel, plugin);
+				}
+
+				// Get Task
+				QueueingConsumer.Delivery task = null;
+				task = consumer.nextDelivery();
+
+				// Date Night
+				if ((task != null) && (task.getBody() != null)) {
+					try {
+						// Fire job that will pass the message to the consumer,
+						// ack the queue and do the retry logic
+						T message = this.toObject(task.getBody());
+						new RabbitMQMessageConsumerJob(channel, task.getEnvelope().getDeliveryTag(), this.queue(), this, message, this.retries()).now();
+
+					} catch (Throwable t) {
+						// Handle Exception
+						Logger.error(ExceptionUtil.getStackTrace(t));
+					}
+
+				}
+			} catch (Throwable t) {
+				channel = null;
+				consumer = null;
+				Logger.error("Error creating consumer channel to RabbitMQ, retrying in a few seconds. Exception: %s", ExceptionUtil.getStackTrace(t));
+				try {
+					Thread.sleep(5000);
+				} catch (InterruptedException e) {
+					Logger.error(ExceptionUtil.getStackTrace(t));
+				}
+			}
+		}
+	}
+
+	/**
+	 * Gets the queue name.
+	 * 
+	 * @return the queue name
+	 */
+	protected abstract String queue();
+
+	/**
+	 * Retries.
+	 * 
+	 * @return the int
+	 */
+	protected int retries() {
+		return retries;
 	}
 
 	/**

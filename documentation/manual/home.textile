@@ -8,7 +8,10 @@ http://twitter.com/_felipera
 
 h3. 1) Installation
 
-play install rabbitmq
+Under dependencies.yml:
+
+require:
+    - play -> rabbitmq 0.0.3
 
 
 
@@ -31,6 +34,7 @@ rabbitmq.exchangeType=direct
 rabbitmq.durable=true
 rabbitmq.autoAck=false
 rabbitmq.basicQos=true
+rabbitmq.retries=5
 
 
 
@@ -100,6 +104,12 @@ public class RabbitMQSampleConsumer extends RabbitMQConsumer<SampleMessage> {
 		return "myQueue";
 	}
 	
+	protected int retries() {
+		// This is the default value defined by "rabbitmq.retries" on
+		// application.conf (please override if you need a new value)
+		return RabbitMQPlugin.retries();
+	}
+	
 	protected Class getMessageType() {
 		return SampleMessage.class;
 	}
@@ -139,6 +149,19 @@ public class RabbitMQSampleFirehose extends RabbitMQFirehose<SampleMessage> {
 }
 
 * Please note this is a Play! job so you can start it manualy or you can use the other annotations provided by Play! like @On or @Every. More information available at http://www.playframework.org/documentation/1.2/jobs.
+
+
+
+h3. 8) Live Stats and Live Streaming
+
+Add the module routes in your routes.conf
+*		/rabbitmq/								module:rabbitmq 
+
+Live Stats and Live Streaming of messages produced and consumed are available at http://localhost:9000/rabbitmq/.
+Live Stats uses Ajax to display the number of successful messages produced and consumed to a queue, errors as well.
+Live Streaming uses WebSockets (requires newer browsers) to stream messages consumed and produced.
+
+* To find out more about WebSockets in the Play! Framework, please visit http://www.playframework.org/documentation/1.2/asynchronous.
 
 
 

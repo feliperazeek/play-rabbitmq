@@ -8,7 +8,10 @@ http://twitter.com/_felipera
 
 h3. 1) Installation
 
-play install rabbitmq
+Under dependencies.yml:
+
+require:
+    - play -> rabbitmq 0.0.3
 
 
 
@@ -31,6 +34,7 @@ rabbitmq.exchangeType=direct
 rabbitmq.durable=true
 rabbitmq.autoAck=false
 rabbitmq.basicQos=true
+rabbitmq.retries=5
 
 
 
@@ -98,6 +102,12 @@ public class RabbitMQSampleConsumer extends RabbitMQConsumer<SampleMessage> {
 
 	protected String queue() {
 		return "myQueue";
+	}
+	
+	protected int retries() {
+		// This is the default value defined by "rabbitmq.retries" on
+		// application.conf (please override if you need a new value)
+		return RabbitMQPlugin.retries();
 	}
 	
 	protected Class getMessageType() {

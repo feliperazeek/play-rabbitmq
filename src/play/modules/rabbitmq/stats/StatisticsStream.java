@@ -34,6 +34,7 @@ public class StatisticsStream extends Job {
 	/** The Stream. */
 	public static play.libs.F.EventStream<StatisticsEvent> stream = new play.libs.F.EventStream<StatisticsEvent>();
 
+	/** The live stream. */
 	public static play.libs.F.EventStream<StatisticsEvent> liveStream = new play.libs.F.EventStream<StatisticsEvent>();
 
 	/**

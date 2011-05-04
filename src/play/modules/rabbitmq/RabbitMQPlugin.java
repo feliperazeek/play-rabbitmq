@@ -25,13 +25,12 @@ import play.Play;
 import play.PlayPlugin;
 import play.modules.rabbitmq.util.ExceptionUtil;
 
+import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.MessageProperties;
 import com.rabbitmq.client.QueueingConsumer;
-import com.rabbitmq.client.AMQP.BasicProperties;
-
 
 // TODO: Auto-generated Javadoc
 /**
@@ -73,10 +72,7 @@ public class RabbitMQPlugin extends PlayPlugin {
 				break;
 
 			} catch (IOException e) {
-				Logger
-						.error(
-								"Error creating RabbitMQ channel, retrying in 5 secs - Exception: %s",
-								ExceptionUtil.getStackTrace(e));
+				Logger.error("Error creating RabbitMQ channel, retrying in 5 secs - Exception: %s", ExceptionUtil.getStackTrace(e));
 				try {
 					Thread.sleep(1000 * 5);
 				} catch (InterruptedException ex) {
@@ -85,30 +81,31 @@ public class RabbitMQPlugin extends PlayPlugin {
 		}
 		return channel;
 	}
-	
+
 	/**
 	 * Creates the channel.
-	 *
-	 * @param queue the queue
+	 * 
+	 * @param queue
+	 *            the queue
 	 * @return the channel
-	 * @throws Exception the exception
+	 * @throws Exception
+	 *             the exception
 	 */
 	public Channel createChannel(String queue) throws Exception {
 		// Counter that keeps track of number of retries
 		int attempts = 0;
-		
+
 		// Get Plugin
 		RabbitMQPlugin plugin = Play.plugin(RabbitMQPlugin.class);
-		
+
 		// Log Debug
-		Logger.info("Initializing connections to RabbitMQ instance (%s:%s), Queue: %s",
-				RabbitMQPlugin.getHost(), RabbitMQPlugin.getPort(), queue);
-		
+		Logger.info("Initializing connections to RabbitMQ instance (%s:%s), Queue: %s", RabbitMQPlugin.getHost(), RabbitMQPlugin.getPort(), queue);
+
 		// Create Channel
 		Channel channel = this.createChannel();
-		
+
 		// Basic Qos
-		if ( RabbitMQPlugin.isBasicQos() ) {
+		if (RabbitMQPlugin.isBasicQos()) {
 			int prefetchCount = 1;
 			channel.basicQos(prefetchCount);
 		}
@@ -117,17 +114,16 @@ public class RabbitMQPlugin extends PlayPlugin {
 		while (true) {
 			// Add to the number of retries
 			attempts++;
-			
+
 			// Log Debug
 			Logger.debug("Retry " + attempts);
-			
+
 			// Get Next Delivery Message
 			try {
-				// Define Queue Params
-				QueueingConsumer consumer = new QueueingConsumer(channel);
+				new QueueingConsumer(channel);
 				channel.exchangeDeclare(queue, plugin.getExchangeType(), true);
 				channel.queueDeclare(queue, plugin.isDurable(), false, false, null);
-				channel.queueBind(queue, queue, queue); 
+				channel.queueBind(queue, queue, queue);
 
 				// Log Debug
 				Logger.info("RabbitMQ Task Channel Available: " + channel);
@@ -138,7 +134,7 @@ public class RabbitMQPlugin extends PlayPlugin {
 			} catch (Throwable t) {
 				// Log Debug
 				Logger.error("Error establishing a connection to RabbitMQ, will keep retrying - Exception: %s", ExceptionUtil.getStackTrace(t));
-				
+
 				// Sleep a little while before retrying
 				try {
 					Thread.sleep(1000 * 10);
@@ -199,10 +195,10 @@ public class RabbitMQPlugin extends PlayPlugin {
 		}
 		return s;
 	}
-	
+
 	/**
 	 * Checks if is auto ack.
-	 *
+	 * 
 	 * @return true, if is auto ack
 	 */
 	public static boolean isAutoAck() {
@@ -213,10 +209,10 @@ public class RabbitMQPlugin extends PlayPlugin {
 		}
 		return Boolean.parseBoolean(s);
 	}
-	
+
 	/**
 	 * Checks if is basic qos.
-	 *
+	 * 
 	 * @return true, if is basic qos
 	 */
 	public static boolean isBasicQos() {
@@ -227,10 +223,25 @@ public class RabbitMQPlugin extends PlayPlugin {
 		}
 		return Boolean.parseBoolean(s);
 	}
-	
+
+	/**
+	 * Retries.
+	 * 
+	 * @return the int
+	 */
+	public static int retries() {
+		int defaultRetries = 5;
+		try {
+			return Integer.valueOf(Play.configuration.getProperty("rabbitmq.retries", String.valueOf(defaultRetries)));
+		} catch (Throwable t) {
+			Logger.error(ExceptionUtil.getStackTrace(t));
+			return defaultRetries;
+		}
+	}
+
 	/**
 	 * Checks if is durable.
-	 *
+	 * 
 	 * @return true, if is durable
 	 */
 	public static boolean isDurable() {
@@ -241,23 +252,23 @@ public class RabbitMQPlugin extends PlayPlugin {
 		}
 		return Boolean.parseBoolean(s);
 	}
-	
+
 	/**
 	 * Gets the basic properties.
-	 *
+	 * 
 	 * @return the basic properties
 	 */
 	public static BasicProperties getBasicProperties() {
-		if ( isDurable() == false ) {
+		if (isDurable() == false) {
 			return null;
 		}
 		BasicProperties b = MessageProperties.PERSISTENT_TEXT_PLAIN;
 		return b;
 	}
-	
+
 	/**
 	 * Gets the exchange type.
-	 *
+	 * 
 	 * @return the exchange type
 	 */
 	public static String getExchangeType() {
