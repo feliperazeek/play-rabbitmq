@@ -25,7 +25,6 @@ import play.modules.rabbitmq.RabbitMQPlugin;
 import play.modules.rabbitmq.stats.StatisticsEvent;
 import play.modules.rabbitmq.stats.StatisticsStream;
 import play.modules.rabbitmq.util.ExceptionUtil;
-import play.modules.rabbitmq.util.JSONMapper;
 
 import com.rabbitmq.client.Channel;
 
@@ -123,8 +122,7 @@ public abstract class RabbitMQPublisher {
 		 *             the exception
 		 */
 		private byte[] getBytes() throws Exception {
-			return JSONMapper.getBytes(this.message);
-			// return MessagePack.pack(this.message);
+			return RabbitMQPlugin.mapper().getBytes(this.message);
 		}
 
 	}

@@ -39,7 +39,7 @@ public class RabbitMQSampleConsumer extends RabbitMQConsumer<SampleMessage> {
 		java.util.Random r = new java.util.Random();
 		boolean b = r.nextBoolean();
 		if ( b == false ) {
-			throw new RuntimeException("Unexpected error processing message: " + message);
+			//throw new RuntimeException("Unexpected error processing message: " + message);
 		}
 		System.out.println("******************************");
 		System.out.println("* Message Consumed: " + message);

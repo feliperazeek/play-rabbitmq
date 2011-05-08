@@ -23,7 +23,6 @@ import play.Play;
 import play.jobs.Job;
 import play.modules.rabbitmq.RabbitMQPlugin;
 import play.modules.rabbitmq.util.ExceptionUtil;
-import play.modules.rabbitmq.util.JSONMapper;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.QueueingConsumer;
@@ -140,7 +139,7 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 						// Fire job that will pass the message to the consumer,
 						// ack the queue and do the retry logic
 						T message = this.toObject(task.getBody());
-						new RabbitMQMessageConsumerJob(channel, task.getEnvelope().getDeliveryTag(), this.queue(), this, message, this.retries()).now();
+						new RabbitMQMessageConsumerJob(channel, task.getEnvelope().getDeliveryTag(), this.queue(), this, message, this.retries()).doJobWithResult();
 
 					} catch (Throwable t) {
 						// Handle Exception
@@ -187,7 +186,7 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 	 *             the exception
 	 */
 	protected T toObject(byte[] bytes) throws Exception {
-		return (T) JSONMapper.getObject(this.getMessageType(), bytes);
+		return (T) RabbitMQPlugin.mapper().getObject(this.getMessageType(), bytes);
 	}
 
 }

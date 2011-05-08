@@ -20,10 +20,13 @@ package play.modules.rabbitmq;
 
 import java.io.IOException;
 
+import org.apache.commons.lang.StringUtils;
+
 import play.Logger;
 import play.Play;
 import play.PlayPlugin;
 import play.modules.rabbitmq.util.ExceptionUtil;
+import play.modules.rabbitmq.util.MsgMapper;
 
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
@@ -40,6 +43,9 @@ public class RabbitMQPlugin extends PlayPlugin {
 
 	/** The Constant factory. */
 	public static final ConnectionFactory factory = new ConnectionFactory();
+	
+	/** The mapper. */
+	private static MsgMapper mapper = null;
 
 	/**
 	 * On application start.
@@ -52,6 +58,28 @@ public class RabbitMQPlugin extends PlayPlugin {
 		factory.setUsername(getUserName());
 		factory.setPassword(getPassword());
 		factory.setVirtualHost(getVhost());
+	}
+
+	/**
+	 * Mapper.
+	 * 
+	 * @return the msg mapper
+	 */
+	public static MsgMapper mapper() {
+		if ( mapper != null ) {
+			return mapper;
+		}
+		String s = Play.configuration.getProperty("rabbitmq.msgmapper");
+		if ((s != null) && StringUtils.isNotBlank(s)) {
+			try {
+				mapper = MsgMapper.Type.valueOf(s).get();
+			} catch (Throwable t) {
+				Logger.error(ExceptionUtil.getStackTrace(t));
+				mapper = MsgMapper.Type.json.get();
+			}
+		}
+		Logger.info("RabbitMQ Message Mapper: %s", mapper);
+		return mapper;
 	}
 
 	/**
