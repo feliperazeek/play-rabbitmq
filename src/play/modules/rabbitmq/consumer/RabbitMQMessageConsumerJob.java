@@ -5,6 +5,7 @@ import play.jobs.Job;
 import play.modules.rabbitmq.stats.StatisticsEvent;
 import play.modules.rabbitmq.stats.StatisticsStream;
 import play.modules.rabbitmq.util.ExceptionUtil;
+import play.modules.rabbitmq.exception.RabbitMQNotRetriableException;
 
 import com.rabbitmq.client.Channel;
 
@@ -94,10 +95,21 @@ public class RabbitMQMessageConsumerJob<T> extends Job<T> {
 				// Update Stats
 				StatisticsStream.add(new StatisticsEvent(this.queue, StatisticsEvent.Type.CONSUMER, StatisticsEvent.Status.SUCCESS));
 
+			} catch (RabbitMQNotRetriableException e) {
+				// Log Exception
+				exception = e;
+				Logger.error("Error processing message (%s) with consumer (%s). Exception (not a retriable exception): %s", this.message, this.consumer, ExceptionUtil.getStackTrace(exception));
+
+				// Update Stats
+				StatisticsStream.add(new StatisticsEvent(this.queue, StatisticsEvent.Type.CONSUMER, StatisticsEvent.Status.ERROR));
+				
+				// We are not retrying with this specific error
+				return;
+			
 			} catch (Throwable t) {
 				// Log Exception
 				exception = t;
-				Logger.error("Error processing message (%s) with consumer (%s). Exception: %s", this.message, this.consumer, ExceptionUtil.getStackTrace(t));
+				Logger.error("Error processing message (%s) with consumer (%s). Exception: %s", this.message, this.consumer, ExceptionUtil.getStackTrace(exception));
 
 				// Update Stats
 				StatisticsStream.add(new StatisticsEvent(this.queue, StatisticsEvent.Type.CONSUMER, StatisticsEvent.Status.ERROR));
