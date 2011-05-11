@@ -20,8 +20,6 @@ package controllers;
 
 import play.modules.rabbitmq.sample.RabbitMQSampleConsumer;
 import play.modules.rabbitmq.sample.RabbitMQSampleFirehose;
-import play.modules.rabbitmq.stats.StatisticsEvent;
-import play.modules.rabbitmq.stats.StatisticsService;
 import play.mvc.Controller;
 
 // TODO: Auto-generated Javadoc
@@ -31,7 +29,7 @@ import play.mvc.Controller;
 public class RabbitMQStats extends Controller {
 
 	/** The service. */
-	private static StatisticsService service = new StatisticsService();
+	private static play.modules.rabbitmq.stats.StatsService service = play.modules.rabbitmq.RabbitMQPlugin.statsService();
 
 	/**
 	 * Index.
@@ -54,11 +52,15 @@ public class RabbitMQStats extends Controller {
 	 *            the queue name
 	 */
 	public static void queueStats(String queueName) {
-		long producerSuccess = service.get(queueName, StatisticsEvent.Type.PRODUCER, StatisticsEvent.Status.SUCCESS);
-		long producerFailed = service.get(queueName, StatisticsEvent.Type.PRODUCER, StatisticsEvent.Status.ERROR);
-		long consumerSuccess = service.get(queueName, StatisticsEvent.Type.CONSUMER, StatisticsEvent.Status.SUCCESS);
-		long consumerFailed = service.get(queueName, StatisticsEvent.Type.CONSUMER, StatisticsEvent.Status.ERROR);
-		render(queueName, producerSuccess, producerFailed, consumerSuccess, consumerFailed);
+		long producerSuccess = service.executions(queueName, play.modules.rabbitmq.stats.StatsEvent.Type.PRODUCER, play.modules.rabbitmq.stats.StatsEvent.Status.SUCCESS);
+		long producerFailed = service.executions(queueName, play.modules.rabbitmq.stats.StatsEvent.Type.PRODUCER, play.modules.rabbitmq.stats.StatsEvent.Status.ERROR);
+		long consumerSuccess = service.executions(queueName, play.modules.rabbitmq.stats.StatsEvent.Type.CONSUMER, play.modules.rabbitmq.stats.StatsEvent.Status.SUCCESS);
+		long consumerFailed = service.executions(queueName, play.modules.rabbitmq.stats.StatsEvent.Type.CONSUMER, play.modules.rabbitmq.stats.StatsEvent.Status.ERROR);
+		long producerSuccessAverageTime = service.averageTime(queueName, play.modules.rabbitmq.stats.StatsEvent.Type.PRODUCER, play.modules.rabbitmq.stats.StatsEvent.Status.SUCCESS);
+		long producerFailedAverageTime = service.averageTime(queueName, play.modules.rabbitmq.stats.StatsEvent.Type.PRODUCER, play.modules.rabbitmq.stats.StatsEvent.Status.ERROR);
+		long consumerSuccessAverageTime = service.averageTime(queueName, play.modules.rabbitmq.stats.StatsEvent.Type.CONSUMER, play.modules.rabbitmq.stats.StatsEvent.Status.SUCCESS);
+		long consumerFailedAverageTime = service.averageTime(queueName, play.modules.rabbitmq.stats.StatsEvent.Type.CONSUMER, play.modules.rabbitmq.stats.StatsEvent.Status.ERROR);
+		render(queueName, producerSuccess, producerFailed, consumerSuccess, consumerFailed, producerSuccessAverageTime, producerFailedAverageTime, consumerSuccessAverageTime, consumerFailedAverageTime);
 	}
 
 	/**
@@ -68,11 +70,15 @@ public class RabbitMQStats extends Controller {
 	 *            the queue name
 	 */
 	public static void queueStatsDetails(String queueName) {
-		long producerSuccess = service.get(queueName, StatisticsEvent.Type.PRODUCER, StatisticsEvent.Status.SUCCESS);
-		long producerFailed = service.get(queueName, StatisticsEvent.Type.PRODUCER, StatisticsEvent.Status.ERROR);
-		long consumerSuccess = service.get(queueName, StatisticsEvent.Type.CONSUMER, StatisticsEvent.Status.SUCCESS);
-		long consumerFailed = service.get(queueName, StatisticsEvent.Type.CONSUMER, StatisticsEvent.Status.ERROR);
-		render(queueName, producerSuccess, producerFailed, consumerSuccess, consumerFailed);
+		long producerSuccess = service.executions(queueName, play.modules.rabbitmq.stats.StatsEvent.Type.PRODUCER, play.modules.rabbitmq.stats.StatsEvent.Status.SUCCESS);
+		long producerFailed = service.executions(queueName, play.modules.rabbitmq.stats.StatsEvent.Type.PRODUCER, play.modules.rabbitmq.stats.StatsEvent.Status.ERROR);
+		long consumerSuccess = service.executions(queueName, play.modules.rabbitmq.stats.StatsEvent.Type.CONSUMER, play.modules.rabbitmq.stats.StatsEvent.Status.SUCCESS);
+		long consumerFailed = service.executions(queueName, play.modules.rabbitmq.stats.StatsEvent.Type.CONSUMER, play.modules.rabbitmq.stats.StatsEvent.Status.ERROR);
+		long producerSuccessAverageTime = service.averageTime(queueName, play.modules.rabbitmq.stats.StatsEvent.Type.PRODUCER, play.modules.rabbitmq.stats.StatsEvent.Status.SUCCESS);
+		long producerFailedAverageTime = service.averageTime(queueName, play.modules.rabbitmq.stats.StatsEvent.Type.PRODUCER, play.modules.rabbitmq.stats.StatsEvent.Status.ERROR);
+		long consumerSuccessAverageTime = service.averageTime(queueName, play.modules.rabbitmq.stats.StatsEvent.Type.CONSUMER, play.modules.rabbitmq.stats.StatsEvent.Status.SUCCESS);
+		long consumerFailedAverageTime = service.averageTime(queueName, play.modules.rabbitmq.stats.StatsEvent.Type.CONSUMER, play.modules.rabbitmq.stats.StatsEvent.Status.ERROR);
+		render(queueName, producerSuccess, producerFailed, consumerSuccess, consumerFailed, producerSuccessAverageTime, producerFailedAverageTime, consumerSuccessAverageTime, consumerFailedAverageTime);
 	}
 
 	/**

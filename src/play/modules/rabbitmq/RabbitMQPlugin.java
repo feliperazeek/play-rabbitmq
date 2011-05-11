@@ -25,6 +25,7 @@ import org.apache.commons.lang.StringUtils;
 import play.Logger;
 import play.Play;
 import play.PlayPlugin;
+import play.modules.rabbitmq.stats.*;
 import play.modules.rabbitmq.util.ExceptionUtil;
 import play.modules.rabbitmq.util.MsgMapper;
 
@@ -46,6 +47,9 @@ public class RabbitMQPlugin extends PlayPlugin {
 	
 	/** The mapper. */
 	private static MsgMapper mapper = null;
+	
+	/** The stats service. */
+	private static StatsService statsService = new StatsService();
 
 	/**
 	 * On application start.
@@ -58,6 +62,15 @@ public class RabbitMQPlugin extends PlayPlugin {
 		factory.setUsername(getUserName());
 		factory.setPassword(getPassword());
 		factory.setVirtualHost(getVhost());
+	}
+	
+	/**
+	 * Stats service.
+	 *
+	 * @return the stats service
+	 */
+	public static StatsService statsService() {
+		return statsService;
 	}
 
 	/**
@@ -77,8 +90,13 @@ public class RabbitMQPlugin extends PlayPlugin {
 				Logger.error(ExceptionUtil.getStackTrace(t));
 				mapper = MsgMapper.Type.json.get();
 			}
+		} else {
+			mapper = MsgMapper.Type.json.get();
 		}
 		Logger.info("RabbitMQ Message Mapper: %s", mapper);
+		if ( mapper == null ) {
+			throw new RuntimeException( "RabbitMQ Message Mapper is null! Config Parameter 'rabbitmq.msgmapper': " + s );
+		}
 		return mapper;
 	}
 

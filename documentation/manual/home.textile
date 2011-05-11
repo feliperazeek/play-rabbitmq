@@ -11,7 +11,7 @@ h3. 1) Installation
 Under dependencies.yml:
 
 require:
-    - play -> rabbitmq 0.0.4
+    - play -> rabbitmq 0.0.5
 
 
 
@@ -184,3 +184,9 @@ Live Streaming uses WebSockets (requires newer browsers) to stream messages cons
 h3. Source Code
 
 The source code is available on Github at https://github.com/feliperazeek/play-rabbitmq.
+
+
+
+h3. Changelog
+
+May 11th 2011 - Version 0.0.5: Fixed bugs on stats and added average time to stats service, stats page for a queue and also to the WebSocket live streaming.

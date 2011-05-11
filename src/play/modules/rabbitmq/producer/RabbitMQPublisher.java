@@ -22,8 +22,6 @@ import play.Logger;
 import play.Play;
 import play.jobs.Job;
 import play.modules.rabbitmq.RabbitMQPlugin;
-import play.modules.rabbitmq.stats.StatisticsEvent;
-import play.modules.rabbitmq.stats.StatisticsStream;
 import play.modules.rabbitmq.util.ExceptionUtil;
 
 import com.rabbitmq.client.Channel;
@@ -78,9 +76,10 @@ public abstract class RabbitMQPublisher {
 		@Override
 		public void doJob() {
 			// Do Work
+			long executionTime = 0l;
 			try {
 				// Start Timer
-				long start = System.nanoTime();
+				long start = new java.util.Date().getTime();
 
 				// Get Producer Information
 				RabbitMQProducer producer = this.getClass().getAnnotation(RabbitMQProducer.class);
@@ -99,18 +98,18 @@ public abstract class RabbitMQPublisher {
 				channel.basicPublish("", this.queueName, plugin.getBasicProperties(), this.getBytes());
 
 				// Execution Time
-				long executionTime = System.nanoTime() - start;
+				executionTime = new java.util.Date().getTime() - start;
 				Logger.info("Message %s has been published to queue %s (execution time: %s ms)", this.message, this.queueName, executionTime);
 
 				// Update Stats
-				StatisticsStream.add(new StatisticsEvent(this.queueName, StatisticsEvent.Type.PRODUCER, StatisticsEvent.Status.SUCCESS));
+				play.modules.rabbitmq.RabbitMQPlugin.statsService().record(this.queueName, play.modules.rabbitmq.stats.StatsEvent.Type.PRODUCER, play.modules.rabbitmq.stats.StatsEvent.Status.SUCCESS, executionTime);
 
 			} catch (Throwable t) {
 				// Handle Exception
 				Logger.error(ExceptionUtil.getStackTrace(t));
 
 				// Update Stats
-				StatisticsStream.add(new StatisticsEvent(this.queueName, StatisticsEvent.Type.CONSUMER, StatisticsEvent.Status.ERROR));
+				play.modules.rabbitmq.RabbitMQPlugin.statsService().record(this.queueName, play.modules.rabbitmq.stats.StatsEvent.Type.CONSUMER, play.modules.rabbitmq.stats.StatsEvent.Status.ERROR, executionTime);
 			}
 		}
 

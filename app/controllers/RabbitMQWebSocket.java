@@ -19,9 +19,6 @@
 package controllers;
 
 import play.Logger;
-import play.libs.F.Promise;
-import play.modules.rabbitmq.stats.StatisticsEvent;
-import play.modules.rabbitmq.stats.StatisticsStream;
 import play.modules.rabbitmq.util.ExceptionUtil;
 import play.mvc.Controller;
 import play.mvc.WebSocketController;
@@ -42,11 +39,10 @@ public class RabbitMQWebSocket extends Controller {
 		public static void index() {
 			while (inbound.isOpen()) {
 				try {
-					Logger.info("Waiting for next event to be published...");
-					Promise<StatisticsEvent> promise = StatisticsStream.liveStream.nextEvent();
-					StatisticsEvent event = await(promise);
+					play.libs.F.Promise<String> promise = play.modules.rabbitmq.RabbitMQPlugin.statsService().liveStream.nextEvent();
+					String event = await(promise);
 					Logger.info("Publishing Event %s to Outbound Subscribers", event);
-					outbound.send(event.toString());
+					outbound.send(event);
 
 				} catch (Throwable t) {
 					Logger.error(ExceptionUtil.getStackTrace(t));

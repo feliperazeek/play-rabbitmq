@@ -2,8 +2,6 @@ package play.modules.rabbitmq.consumer;
 
 import play.Logger;
 import play.jobs.Job;
-import play.modules.rabbitmq.stats.StatisticsEvent;
-import play.modules.rabbitmq.stats.StatisticsStream;
 import play.modules.rabbitmq.util.ExceptionUtil;
 import play.modules.rabbitmq.exception.RabbitMQNotRetriableException;
 
@@ -70,6 +68,7 @@ public class RabbitMQMessageConsumerJob<T> extends Job<T> {
 		Throwable exception = null;
 
 		// Loop until it's done retrying
+		long executionTime = 0l;
 		while (retryCount < this.retries + 1) {
 			// Log Debug
 			if (retryCount > 0) {
@@ -79,7 +78,7 @@ public class RabbitMQMessageConsumerJob<T> extends Job<T> {
 			// Process Message
 			try {
 				// Start Timer
-				long start = System.nanoTime();
+				long start = new java.util.Date().getTime();
 
 				// Call Consumer
 				this.consumer.consume(this.message);
@@ -89,11 +88,11 @@ public class RabbitMQMessageConsumerJob<T> extends Job<T> {
 				this.channel.basicAck(this.deliveryTag, false);
 
 				// Execution Time
-				long executionTime = System.nanoTime() - start;
+				executionTime = new java.util.Date().getTime() - start;
 				Logger.info("Message %s from queue %s has been processed by consumer %s (execution time: %s ms)", this.message, this.queue, this.consumer, executionTime);
 
 				// Update Stats
-				StatisticsStream.add(new StatisticsEvent(this.queue, StatisticsEvent.Type.CONSUMER, StatisticsEvent.Status.SUCCESS));
+				play.modules.rabbitmq.RabbitMQPlugin.statsService().record(this.queue, play.modules.rabbitmq.stats.StatsEvent.Type.CONSUMER, play.modules.rabbitmq.stats.StatsEvent.Status.SUCCESS, executionTime);
 
 			} catch (RabbitMQNotRetriableException e) {
 				// Log Exception
@@ -101,7 +100,7 @@ public class RabbitMQMessageConsumerJob<T> extends Job<T> {
 				Logger.error("Error processing message (%s) with consumer (%s). Exception (not a retriable exception): %s", this.message, this.consumer, ExceptionUtil.getStackTrace(exception));
 
 				// Update Stats
-				StatisticsStream.add(new StatisticsEvent(this.queue, StatisticsEvent.Type.CONSUMER, StatisticsEvent.Status.ERROR));
+				play.modules.rabbitmq.RabbitMQPlugin.statsService().record(this.queue, play.modules.rabbitmq.stats.StatsEvent.Type.CONSUMER, play.modules.rabbitmq.stats.StatsEvent.Status.ERROR, executionTime);
 				
 				// We are not retrying with this specific error
 				return;
@@ -112,7 +111,7 @@ public class RabbitMQMessageConsumerJob<T> extends Job<T> {
 				Logger.error("Error processing message (%s) with consumer (%s). Exception: %s", this.message, this.consumer, ExceptionUtil.getStackTrace(exception));
 
 				// Update Stats
-				StatisticsStream.add(new StatisticsEvent(this.queue, StatisticsEvent.Type.CONSUMER, StatisticsEvent.Status.ERROR));
+				play.modules.rabbitmq.RabbitMQPlugin.statsService().record(this.queue, play.modules.rabbitmq.stats.StatsEvent.Type.CONSUMER, play.modules.rabbitmq.stats.StatsEvent.Status.ERROR, executionTime);
 			}
 
 			// Check Successful Execution
