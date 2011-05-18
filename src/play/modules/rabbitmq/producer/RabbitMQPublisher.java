@@ -43,6 +43,17 @@ public abstract class RabbitMQPublisher {
 	public static void publish(String queueName, Object message) {
 		new RabbitMQPublisherJob(queueName, message).now();
 	}
+	
+	/**
+	 * Publish.
+	 *
+	 * @param queueName the queue name
+	 * @param routingKey the routing key
+	 * @param message the message
+	 */
+	public static void publish(String queueName, String routingKey, Object message) {
+		new RabbitMQPublisherJob(queueName, routingKey, message).now();
+	}
 
 	/**
 	 * The Class RabbitMQPublisherJob.
@@ -51,9 +62,22 @@ public abstract class RabbitMQPublisher {
 
 		/** The message. */
 		private Object message;
+		
+		/** The routing key. */
+		private String routingKey;
 
 		/** The queue name. */
 		private String queueName;
+		
+		/**
+		 * Instantiates a new rabbit mq publisher job.
+		 *
+		 * @param queueName the queue name
+		 * @param message the message
+		 */
+		public RabbitMQPublisherJob(String queueName, Object message) {
+			this(queueName, queueName, message);
+		}
 
 		/**
 		 * Instantiates a new rabbit mq publisher.
@@ -63,8 +87,9 @@ public abstract class RabbitMQPublisher {
 		 * @param message
 		 *            the message
 		 */
-		public RabbitMQPublisherJob(String queueName, Object message) {
+		public RabbitMQPublisherJob(String queueName, String routingKey, Object message) {
 			this.queueName = queueName;
+			this.routingKey = routingKey;
 			this.message = message;
 		}
 
@@ -89,13 +114,13 @@ public abstract class RabbitMQPublisher {
 
 				// Create Channel
 				RabbitMQPlugin plugin = Play.plugin(RabbitMQPlugin.class);
-				Channel channel = plugin.createChannel(this.queueName);
+				Channel channel = plugin.createChannel(this.queueName, this.routingKey);
 				if (channel == null) {
 					throw new RuntimeException("Error creating a communication channel with RabbitMQ. Please verify the health of your RabbitMQ node and check your configuration.");
 				}
 
 				// Publish Message
-				channel.basicPublish("", this.queueName, plugin.getBasicProperties(), this.getBytes());
+				channel.basicPublish(this.queueName, this.routingKey, plugin.getBasicProperties(), this.getBytes());
 
 				// Execution Time
 				executionTime = new java.util.Date().getTime() - start;

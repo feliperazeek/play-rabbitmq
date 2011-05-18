@@ -137,7 +137,7 @@ public class RabbitMQPlugin extends PlayPlugin {
 	 * @throws Exception
 	 *             the exception
 	 */
-	public Channel createChannel(String queue) throws Exception {
+	public Channel createChannel(String queue, String routingKey) throws Exception {
 		// Counter that keeps track of number of retries
 		int attempts = 0;
 
@@ -166,10 +166,14 @@ public class RabbitMQPlugin extends PlayPlugin {
 
 			// Get Next Delivery Message
 			try {
-				new QueueingConsumer(channel);
+				// http://www.rabbitmq.com/api-guide.html
+				// channel.exchangeDeclare(exchangeName, "direct", true);
+				// String queueName = channel.queueDeclare().getQueue();
+				// channel.queueBind(queueName, exchangeName, routingKey);
+				
 				channel.exchangeDeclare(queue, plugin.getExchangeType(), true);
 				channel.queueDeclare(queue, plugin.isDurable(), false, false, null);
-				channel.queueBind(queue, queue, queue);
+				channel.queueBind(queue, queue, routingKey);
 
 				// Log Debug
 				Logger.info("RabbitMQ Task Channel Available: " + channel);

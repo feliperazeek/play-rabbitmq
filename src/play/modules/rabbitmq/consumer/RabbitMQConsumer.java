@@ -61,7 +61,7 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 	 */
 	protected Channel createChannel(RabbitMQPlugin plugin) throws Exception {
 		// Get Plugin
-		Channel channel = plugin.createChannel(this.queue());
+		Channel channel = plugin.createChannel(this.queue(), this.routingKey());
 		return channel;
 	}
 
@@ -166,6 +166,16 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 	 * @return the queue name
 	 */
 	protected abstract String queue();
+	
+	/**
+	 * Routing key.
+	 *
+	 * @param t the t
+	 * @return the string
+	 */
+	protected String routingKey() {
+		return this.queue();
+	}
 
 	/**
 	 * Retries.
