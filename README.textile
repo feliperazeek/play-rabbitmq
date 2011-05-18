@@ -1,7 +1,8 @@
 h1. Play! Framework RabbitMQ Module
 
-h2. Felipe Oliveira
+Felipe Oliveira
 http://mashup.fm
+http://playframework.info
 http://geeks.aretotally.in
 http://twitter.com/_felipera
 
@@ -190,3 +191,5 @@ The source code is available on Github at https://github.com/feliperazeek/play-r
 h3. Changelog
 
 May 11th 2011 - Version 0.0.5: Fixed bugs on stats and added average time to stats service, stats page for a queue and also to the WebSocket live streaming.
+
+May 18th 2011 - Version 0.0.6: Adding routingKey to Publisher, Consumer, Firehose, RabbitMQPlugin, etc to add support for RabbitMQ Topic Exchange.
