@@ -12,7 +12,7 @@ h3. 1) Installation
 Under dependencies.yml:
 
 require:
-    - play -> rabbitmq 0.0.5
+    - play -> rabbitmq 0.0.6
 
 
 
