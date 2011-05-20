@@ -118,6 +118,10 @@ public class RabbitMQSampleConsumer extends RabbitMQConsumer<SampleMessage> {
 		return "myQueue";
 	}
 	
+	protected String routingKey() {
+		return this.queue();
+	}
+	
 	protected int retries() {
 		// This is the default value defined by "rabbitmq.retries" on
 		// application.conf (please override if you need a new value)
@@ -134,6 +138,8 @@ public class RabbitMQSampleConsumer extends RabbitMQConsumer<SampleMessage> {
 ** There are some cases where you don't want to retry re-processing the message, for example in cases you know you will keep getting the same error no matter how many times you retry that message.
 First of all, we avoid infiniate loops by retrying only a certain amount of times, defined by the method retries() on the consumer class.
 For the cases where you don't want to retry at all simply throw a RabbitMQNotRetriableException. The RabbitMQConsumer base class will catch it and acknowledge to RabbitMQ, instead of trying to reprocess the message.
+
+*** Each consumer has a method routingKey() which you can optionally overwrite to setup a Topic Exchange with RabbitMQ. Same thing on the producer.
 
 
 h3. 7) Firehose - Another way to publish messages in batch

@@ -101,6 +101,7 @@ public abstract class RabbitMQPublisher {
 		@Override
 		public void doJob() {
 			// Do Work
+			Channel channel = null;
 			long executionTime = 0l;
 			try {
 				// Start Timer
@@ -114,7 +115,7 @@ public abstract class RabbitMQPublisher {
 
 				// Create Channel
 				RabbitMQPlugin plugin = Play.plugin(RabbitMQPlugin.class);
-				Channel channel = plugin.createChannel(this.queueName, this.routingKey);
+				channel = plugin.createChannel(this.queueName, this.routingKey);
 				if (channel == null) {
 					throw new RuntimeException("Error creating a communication channel with RabbitMQ. Please verify the health of your RabbitMQ node and check your configuration.");
 				}
@@ -135,6 +136,16 @@ public abstract class RabbitMQPublisher {
 
 				// Update Stats
 				play.modules.rabbitmq.RabbitMQPlugin.statsService().record(this.queueName, play.modules.rabbitmq.stats.StatsEvent.Type.CONSUMER, play.modules.rabbitmq.stats.StatsEvent.Status.ERROR, executionTime);
+			
+			} finally {
+				// Close Channel
+				if ( channel != null ) {
+					try {
+						channel.close();
+					} catch (Throwable t) {
+						Logger.error(ExceptionUtil.getStackTrace(t));
+					}
+				}
 			}
 		}
 
