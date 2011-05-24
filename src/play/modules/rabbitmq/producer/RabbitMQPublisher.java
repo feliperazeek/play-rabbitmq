@@ -41,7 +41,11 @@ public abstract class RabbitMQPublisher {
 	 *            the message
 	 */
 	public static void publish(String queueName, Object message) {
-		new RabbitMQPublisherJob(queueName, message).now();
+		try {
+			new RabbitMQPublisherJob(queueName, message).doJobWithResult();
+		} catch (Throwable t) {
+			Logger.error(ExceptionUtil.getStackTrace(t));
+		}
 	}
 	
 	/**
@@ -52,7 +56,11 @@ public abstract class RabbitMQPublisher {
 	 * @param message the message
 	 */
 	public static void publish(String queueName, String routingKey, Object message) {
-		new RabbitMQPublisherJob(queueName, routingKey, message).now();
+		try {
+			new RabbitMQPublisherJob(queueName, routingKey, message).doJobWithResult();
+		} catch (Throwable t) {
+			Logger.error(ExceptionUtil.getStackTrace(t));
+		}
 	}
 
 	/**
