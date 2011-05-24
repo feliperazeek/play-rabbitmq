@@ -2,6 +2,8 @@
 # ~~~~~
 application.name=rabbitmq
 
+rabbitmq.msgmapper=pojo
+
 # Application mode
 # ~~~~~
 # Set to dev to enable instant reloading and other development help.

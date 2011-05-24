@@ -141,10 +141,16 @@ public abstract class RabbitMQPublisher {
 				// Close Channel
 				if ( channel != null ) {
 					try {
-						channel.close();
+						if ( channel.getConnection() != null && channel.getConnection().isOpen() ) {
+							channel.getConnection().close();
+						}
+						if ( channel != null && channel.isOpen() ) {
+							channel.close();
+						}
 					} catch (Throwable t) {
 						Logger.error(ExceptionUtil.getStackTrace(t));
 					}
+					channel = null;
 				}
 			}
 		}

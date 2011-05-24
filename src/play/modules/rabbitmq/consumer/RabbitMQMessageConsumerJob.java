@@ -95,6 +95,16 @@ public class RabbitMQMessageConsumerJob<T> extends Job<T> {
 				play.modules.rabbitmq.RabbitMQPlugin.statsService().record(this.queue, play.modules.rabbitmq.stats.StatsEvent.Type.CONSUMER, play.modules.rabbitmq.stats.StatsEvent.Status.SUCCESS, executionTime);
 
 			} catch (RabbitMQNotRetriableException e) {
+				// Update Count
+				retryCount = Integer.MAX_VALUE;
+				
+				// Now tell Daddy everything is cool
+				try {
+					this.channel.basicAck(this.deliveryTag, false);
+				} catch (Throwable t) {
+					Logger.error(ExceptionUtil.getStackTrace("Error doing a basicAck for tag: " + this.deliveryTag, t));
+				}
+				
 				// Log Exception
 				exception = e;
 				Logger.error("Error processing message (%s) with consumer (%s). Exception (not a retriable exception): %s", this.message, this.consumer, ExceptionUtil.getStackTrace(exception));
@@ -103,7 +113,7 @@ public class RabbitMQMessageConsumerJob<T> extends Job<T> {
 				play.modules.rabbitmq.RabbitMQPlugin.statsService().record(this.queue, play.modules.rabbitmq.stats.StatsEvent.Type.CONSUMER, play.modules.rabbitmq.stats.StatsEvent.Status.ERROR, executionTime);
 				
 				// We are not retrying with this specific error
-				return;
+				break;
 			
 			} catch (Throwable t) {
 				// Log Exception
@@ -125,6 +135,29 @@ public class RabbitMQMessageConsumerJob<T> extends Job<T> {
 		// Log Debug
 		if (!success) {
 			Logger.error("Final error processing message (%s) with consumer (%s). Last Exception: %s", this.message, this.consumer, exception);
+		}
+		
+		// Now tell Daddy everything is cool
+		try {
+			this.channel.basicAck(this.deliveryTag, false);
+		} catch (Throwable e) {
+			Logger.error(ExceptionUtil.getStackTrace("Error doing a basicAck for tag: " + this.deliveryTag, e));
+		}
+		
+		// Cleanup Channel
+		if ( channel != null && channel.getConnection() != null && channel.getConnection().isOpen() ) {
+			try {
+				channel.getConnection().close();
+			} catch (Throwable t) {
+				Logger.error(ExceptionUtil.getStackTrace(t));
+			}
+		}
+		if ( channel != null && channel.isOpen() ) {
+			try {
+				channel.close();
+			} catch (Throwable t) {
+				Logger.error(ExceptionUtil.getStackTrace(t));
+			}
 		}
 	}
 

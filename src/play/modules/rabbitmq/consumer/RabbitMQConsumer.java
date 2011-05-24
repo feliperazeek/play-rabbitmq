@@ -115,12 +115,17 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 		// Define Channel
 		Channel channel = null;
 		QueueingConsumer consumer = null;
+		Long deliveryTag = null;
 
 		// Get Channel
 		while (true) {
+			// Log Debug
+			Logger.info("Entering main loop on consumer: " + this);
+			
 			try {
 				// Create Channel
-				if (channel == null) {
+				if (channel == null || (channel != null && channel.isOpen() == false)) {
+					consumer = null;
 					channel = this.createChannel(plugin);
 				}
 
@@ -130,16 +135,16 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 				}
 
 				// Get Task
-				QueueingConsumer.Delivery task = null;
-				task = consumer.nextDelivery();
+				QueueingConsumer.Delivery task = consumer.nextDelivery();
 
 				// Date Night
 				if ((task != null) && (task.getBody() != null)) {
 					try {
 						// Fire job that will pass the message to the consumer,
 						// ack the queue and do the retry logic
+						deliveryTag = task.getEnvelope().getDeliveryTag();
 						T message = this.toObject(task.getBody());
-						new RabbitMQMessageConsumerJob(channel, task.getEnvelope().getDeliveryTag(), this.queue(), this, message, this.retries()).doJobWithResult();
+						new RabbitMQMessageConsumerJob(channel, deliveryTag, this.queue(), this, message, this.retries()).doJobWithResult();
 
 					} catch (Throwable t) {
 						// Handle Exception
@@ -147,14 +152,37 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 					}
 
 				}
+				
 			} catch (Throwable t) {
-				channel = null;
-				consumer = null;
 				Logger.error("Error creating consumer channel to RabbitMQ, retrying in a few seconds. Exception: %s", ExceptionUtil.getStackTrace(t));
 				try {
 					Thread.sleep(5000);
 				} catch (InterruptedException e) {
 					Logger.error(ExceptionUtil.getStackTrace(t));
+				}
+				
+			} finally {
+				if ( channel != null ) {
+					// Now tell Daddy everything is cool
+					try {
+						if ( deliveryTag != null && channel.isOpen() ) {
+							channel.basicAck(deliveryTag, false);
+						}
+					} catch (Throwable e) {
+						Logger.error(ExceptionUtil.getStackTrace("Error doing a basicAck for tag: " + deliveryTag, e));
+					}
+					try {
+						if (  channel.getConnection() != null && channel.getConnection().isOpen() ) {
+							channel.getConnection().close();
+						}
+						if ( channel.isOpen() == true ) {
+							channel.close();
+						}
+					} catch (Throwable t) {
+						Logger.error(ExceptionUtil.getStackTrace(t));
+					} finally {
+						channel = null;
+					}
 				}
 			}
 		}
