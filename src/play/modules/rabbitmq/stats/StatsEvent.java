@@ -73,9 +73,21 @@ public class StatsEvent {
 
 		/** The SUCCESS. */
 		SUCCESS,
+		
+		/** The SUCCES s_ afte r_ retry. */
+		SUCCESS_AFTER_RETRY,
+		
+		/** The SUCCES s_ firs t_ attempt. */
+		SUCCESS_FIRST_ATTEMPT,
 
 		/** The ERROR. */
-		ERROR;
+		ERROR,
+		
+		/** The ERRO r_ afte r_ retry. */
+		ERROR_AFTER_RETRY,
+		
+		/** The ERRO r_ firs t_ attempt. */
+		ERROR_FIRST_ATTEMPT;
 
 	}
 

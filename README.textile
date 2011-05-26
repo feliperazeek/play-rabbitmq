@@ -199,3 +199,5 @@ h3. Changelog
 May 11th 2011 - Version 0.0.5: Fixed bugs on stats and added average time to stats service, stats page for a queue and also to the WebSocket live streaming.
 
 May 18th 2011 - Version 0.0.6: Adding routingKey to Publisher, Consumer, Firehose, RabbitMQPlugin, etc to add support for RabbitMQ Topic Exchange.
+
+May 26th 2011 - Version 0.0.8: Adding more stats

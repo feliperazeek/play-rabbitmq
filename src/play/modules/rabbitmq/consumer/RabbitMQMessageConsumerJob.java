@@ -93,7 +93,12 @@ public class RabbitMQMessageConsumerJob<T> extends Job<T> {
 
 				// Update Stats
 				play.modules.rabbitmq.RabbitMQPlugin.statsService().record(this.queue, play.modules.rabbitmq.stats.StatsEvent.Type.CONSUMER, play.modules.rabbitmq.stats.StatsEvent.Status.SUCCESS, executionTime);
-
+				if (retryCount == 0) {
+					play.modules.rabbitmq.RabbitMQPlugin.statsService().record(this.queue, play.modules.rabbitmq.stats.StatsEvent.Type.CONSUMER, play.modules.rabbitmq.stats.StatsEvent.Status.SUCCESS_FIRST_ATTEMPT, executionTime);
+				} else {
+					play.modules.rabbitmq.RabbitMQPlugin.statsService().record(this.queue, play.modules.rabbitmq.stats.StatsEvent.Type.CONSUMER, play.modules.rabbitmq.stats.StatsEvent.Status.SUCCESS_AFTER_RETRY, executionTime);
+				}
+				
 			} catch (RabbitMQNotRetriableException e) {
 				// Update Count
 				retryCount = Integer.MAX_VALUE;
@@ -111,6 +116,11 @@ public class RabbitMQMessageConsumerJob<T> extends Job<T> {
 
 				// Update Stats
 				play.modules.rabbitmq.RabbitMQPlugin.statsService().record(this.queue, play.modules.rabbitmq.stats.StatsEvent.Type.CONSUMER, play.modules.rabbitmq.stats.StatsEvent.Status.ERROR, executionTime);
+				if (retryCount == 0) {
+					play.modules.rabbitmq.RabbitMQPlugin.statsService().record(this.queue, play.modules.rabbitmq.stats.StatsEvent.Type.CONSUMER, play.modules.rabbitmq.stats.StatsEvent.Status.ERROR_FIRST_ATTEMPT, executionTime);
+				} else {
+					play.modules.rabbitmq.RabbitMQPlugin.statsService().record(this.queue, play.modules.rabbitmq.stats.StatsEvent.Type.CONSUMER, play.modules.rabbitmq.stats.StatsEvent.Status.ERROR_AFTER_RETRY, executionTime);
+				}
 				
 				// We are not retrying with this specific error
 				break;
@@ -122,6 +132,11 @@ public class RabbitMQMessageConsumerJob<T> extends Job<T> {
 
 				// Update Stats
 				play.modules.rabbitmq.RabbitMQPlugin.statsService().record(this.queue, play.modules.rabbitmq.stats.StatsEvent.Type.CONSUMER, play.modules.rabbitmq.stats.StatsEvent.Status.ERROR, executionTime);
+				if (retryCount == 0) {
+					play.modules.rabbitmq.RabbitMQPlugin.statsService().record(this.queue, play.modules.rabbitmq.stats.StatsEvent.Type.CONSUMER, play.modules.rabbitmq.stats.StatsEvent.Status.ERROR_FIRST_ATTEMPT, executionTime);
+				} else {
+					play.modules.rabbitmq.RabbitMQPlugin.statsService().record(this.queue, play.modules.rabbitmq.stats.StatsEvent.Type.CONSUMER, play.modules.rabbitmq.stats.StatsEvent.Status.ERROR_AFTER_RETRY, executionTime);
+				}
 			}
 
 			// Check Successful Execution
