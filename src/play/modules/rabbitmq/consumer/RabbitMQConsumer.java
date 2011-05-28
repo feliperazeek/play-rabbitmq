@@ -121,68 +121,81 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 		while (true) {
 			// Log Debug
 			Logger.info("Entering main loop on consumer: " + this);
-			
-			try {
-				// Create Channel
-				if (channel == null || (channel != null && channel.isOpen() == false)) {
-					consumer = null;
-					channel = this.createChannel(plugin);
-				}
 
-				// Create Consumer
-				if (consumer == null) {
-					consumer = this.createConsumer(channel, plugin);
-				}
+			// Are Consumers Running?
+			boolean active = RabbitMQPlugin.areConsumersActive();
 
-				// Get Task
-				QueueingConsumer.Delivery task = consumer.nextDelivery();
-
-				// Date Night
-				if ((task != null) && (task.getBody() != null)) {
-					try {
-						// Fire job that will pass the message to the consumer,
-						// ack the queue and do the retry logic
-						deliveryTag = task.getEnvelope().getDeliveryTag();
-						T message = this.toObject(task.getBody());
-						new RabbitMQMessageConsumerJob(channel, deliveryTag, this.queue(), this, message, this.retries()).doJobWithResult();
-
-					} catch (Throwable t) {
-						// Handle Exception
-						Logger.error(ExceptionUtil.getStackTrace(t));
-					}
-
-				}
-				
-			} catch (Throwable t) {
-				Logger.error("Error creating consumer channel to RabbitMQ, retrying in a few seconds. Exception: %s", ExceptionUtil.getStackTrace(t));
+			// Only do work if consumers are running
+			if (active) {
 				try {
-					Thread.sleep(5000);
-				} catch (InterruptedException e) {
-					Logger.error(ExceptionUtil.getStackTrace(t));
-				}
-				
-			} finally {
-				if ( channel != null ) {
-					// Now tell Daddy everything is cool
-					try {
-						if ( deliveryTag != null && channel.isOpen() ) {
-							channel.basicAck(deliveryTag, false);
-						}
-					} catch (Throwable e) {
-						Logger.error(ExceptionUtil.getStackTrace("Error doing a basicAck for tag: " + deliveryTag, e));
+					// Create Channel
+					if (channel == null || (channel != null && channel.isOpen() == false)) {
+						consumer = null;
+						channel = this.createChannel(plugin);
 					}
+
+					// Create Consumer
+					if (consumer == null) {
+						consumer = this.createConsumer(channel, plugin);
+					}
+
+					// Get Task
+					QueueingConsumer.Delivery task = consumer.nextDelivery();
+
+					// Date Night
+					if ((task != null) && (task.getBody() != null)) {
+						try {
+							// Fire job that will pass the message to the
+							// consumer,
+							// ack the queue and do the retry logic
+							deliveryTag = task.getEnvelope().getDeliveryTag();
+							T message = this.toObject(task.getBody());
+							new RabbitMQMessageConsumerJob(channel, deliveryTag, this.queue(), this, message, this.retries()).doJobWithResult();
+
+						} catch (Throwable t) {
+							// Handle Exception
+							Logger.error(ExceptionUtil.getStackTrace(t));
+						}
+
+					}
+
+				} catch (Throwable t) {
+					Logger.error("Error creating consumer channel to RabbitMQ, retrying in a few seconds. Exception: %s", ExceptionUtil.getStackTrace(t));
 					try {
-						if (  channel.getConnection() != null && channel.getConnection().isOpen() ) {
-							channel.getConnection().close();
-						}
-						if ( channel.isOpen() == true ) {
-							channel.close();
-						}
-					} catch (Throwable t) {
+						Thread.sleep(5000);
+					} catch (InterruptedException e) {
 						Logger.error(ExceptionUtil.getStackTrace(t));
-					} finally {
-						channel = null;
 					}
+
+				} finally {
+					if (channel != null) {
+						// Now tell Daddy everything is cool
+						try {
+							if (deliveryTag != null && channel.isOpen()) {
+								channel.basicAck(deliveryTag, false);
+							}
+						} catch (Throwable e) {
+							Logger.error(ExceptionUtil.getStackTrace("Error doing a basicAck for tag: " + deliveryTag, e));
+						}
+						try {
+							if (channel.getConnection() != null && channel.getConnection().isOpen()) {
+								channel.getConnection().close();
+							}
+							if (channel.isOpen() == true) {
+								channel.close();
+							}
+						} catch (Throwable t) {
+							Logger.error(ExceptionUtil.getStackTrace(t));
+						} finally {
+							channel = null;
+						}
+					}
+				}
+			} else {
+				Logger.warn("RabbitMQ consumers are paused and napping for 10 secs...");
+				try {
+					Thread.sleep(10000);
+				} catch (Throwable t) {
 				}
 			}
 		}
@@ -194,11 +207,12 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 	 * @return the queue name
 	 */
 	protected abstract String queue();
-	
+
 	/**
 	 * Routing key.
-	 *
-	 * @param t the t
+	 * 
+	 * @param t
+	 *            the t
 	 * @return the string
 	 */
 	protected String routingKey() {

@@ -50,6 +50,9 @@ public class RabbitMQPlugin extends PlayPlugin {
 	
 	/** The stats service. */
 	private static StatsService statsService = new StatsService();
+	
+	/** The consumers running. */
+	private static boolean consumersActive = true;
 
 	/**
 	 * On application start.
@@ -62,6 +65,24 @@ public class RabbitMQPlugin extends PlayPlugin {
 		factory.setUsername(getUserName());
 		factory.setPassword(getPassword());
 		factory.setVirtualHost(getVhost());
+	}
+	
+	/**
+	 * Consumers running.
+	 *
+	 * @return true, if successful
+	 */
+	public static boolean areConsumersActive() {
+		return consumersActive;
+	}
+	
+	/**
+	 * Consumers running.
+	 *
+	 * @param b the b
+	 */
+	public static void consumersActive(boolean b) {
+		consumersActive = b;
 	}
 	
 	/**

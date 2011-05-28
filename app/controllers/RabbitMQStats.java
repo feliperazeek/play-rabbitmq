@@ -18,6 +18,7 @@
  */
 package controllers;
 
+import play.modules.rabbitmq.RabbitMQPlugin;
 import play.modules.rabbitmq.sample.RabbitMQSampleConsumer;
 import play.modules.rabbitmq.sample.RabbitMQSampleFirehose;
 import play.mvc.Controller;
@@ -35,7 +36,19 @@ public class RabbitMQStats extends Controller {
 	 * Index.
 	 */
 	public static void index() {
-		render();
+		boolean consumersActive = RabbitMQPlugin.areConsumersActive();
+		render(consumersActive);
+	}
+
+	/**
+	 * Consumer status.
+	 * 
+	 * @param b
+	 *            the b
+	 */
+	public static void consumerStatus(boolean b) {
+		RabbitMQPlugin.consumersActive(b);
+		index();
 	}
 
 	/**

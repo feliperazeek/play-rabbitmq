@@ -12,7 +12,7 @@ h3. 1) Installation
 Under dependencies.yml:
 
 require:
-    - play -> rabbitmq 0.0.6
+    - play -> rabbitmq
 
 
 
@@ -201,3 +201,5 @@ May 11th 2011 - Version 0.0.5: Fixed bugs on stats and added average time to sta
 May 18th 2011 - Version 0.0.6: Adding routingKey to Publisher, Consumer, Firehose, RabbitMQPlugin, etc to add support for RabbitMQ Topic Exchange.
 
 May 26th 2011 - Version 0.0.8: Adding more stats
+
+May 28th 2011 - Version 0.0.9: Adding ability for consumers to pause. 

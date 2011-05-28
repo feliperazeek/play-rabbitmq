@@ -23,3 +23,13 @@ RabbitMQ Queue Name: <input type="text" name="queueName" value="myQueue">
 <h1>Sample Queue</h1>
 
 <li><a href="@{RabbitMQStats.fireSampleQueue()}">Trigger Sample Firehose</a></li>
+
+<hr>
+
+<h1>Consumers Status</h1>
+#{if consumersActive == false}
+<li><strong>Paused</strong> | <a href="@{RabbitMQStats.consumerStatus(true)}">Play</a></li>
+#{/if}
+#{else}
+<li><a href="@{RabbitMQStats.consumerStatus(false)}">Pause</a> | <strong>Playing</strong></li>
+#{/else}
