@@ -41,12 +41,6 @@ public class Stats<KEY> {
 	/** The map. */
 	protected ConcurrentHashMap<KEY, ExecutionTimes> map;
 
-	/** The execution stream. */
-	public EventStream<ExecutionEvent> executionStream;
-
-	/** The executor. */
-	protected ExecutorService executor;
-
 	/** The debug. */
 	protected boolean debug = true;
 
@@ -55,9 +49,6 @@ public class Stats<KEY> {
 	 */
 	public Stats() {
 		this.map = new ConcurrentHashMap<KEY, ExecutionTimes>();
-		this.executionStream = new EventStream<ExecutionEvent>();
-		this.executor = Executors.newFixedThreadPool(5);
-		this.now();
 	}
 
 	/**
@@ -69,27 +60,6 @@ public class Stats<KEY> {
 	protected void log(String msg) {
 		if (this.debug) {
 			Logger.info(msg);
-		}
-	}
-
-	/**
-	 * Now.
-	 */
-	public void now() {
-		try {
-			this.executor.submit(new Callable<Stats>() {
-				@Override
-				public Stats call() throws Exception {
-					Stats.this.log("Firing job to listen on execution stream");
-					while (true) {
-						Stats.this.log("Waiting on Execution Event...");
-						Stats.this.await(Stats.this.executionStream.nextEvent());
-					}
-				}
-
-			});
-		} catch (Throwable t) {
-			Logger.error(ExceptionUtil.getStackTrace(t));
 		}
 	}
 
@@ -192,21 +162,12 @@ public class Stats<KEY> {
 	 *            the execution time
 	 */
 	public void record(KEY key, long executionTime) {
-		this.executionStream.publish(new Stats.ExecutionEvent(key, executionTime));
-	}
-
-	/**
-	 * Await.
-	 * 
-	 * @param promise
-	 *            the promise
-	 */
-	protected void await(Promise<ExecutionEvent> promise) {
 		try {
-			ExecutionEvent e = promise.get();
+			ExecutionEvent e = new Stats.ExecutionEvent(key, executionTime);
 			this.log("Received Execution Event: " + e);
 
 			this.map.putIfAbsent(e.key, new ExecutionTimes());
+			
 			ExecutionTimes et = this.map.get(e.key);
 			if (et == null) {
 				throw new RuntimeException("Invalid Key: " + et);
