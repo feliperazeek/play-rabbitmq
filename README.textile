@@ -203,3 +203,5 @@ May 18th 2011 - Version 0.0.6: Adding routingKey to Publisher, Consumer, Firehos
 May 26th 2011 - Version 0.0.8: Adding more stats
 
 May 28th 2011 - Version 0.0.9: Adding ability for consumers to pause. 
+
+June 16th 2011 - Version 0.2: Upgrading to RabbitMQ 2.5.0 and fixed bugs
