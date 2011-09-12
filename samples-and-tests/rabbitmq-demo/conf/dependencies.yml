@@ -1,0 +1,12 @@
+
+require:
+    - play
+#    - play -> rabbitmq 0.2
+    - localModule -> play-rabbitmq 0.2
+
+repositories:    
+    - localModule:
+        type:       local
+        artifact:   "${application.path}/../../dist/[module]-[revision].zip"
+        contains:
+            - localModule -> *

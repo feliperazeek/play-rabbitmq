@@ -19,13 +19,15 @@
 package play.modules.rabbitmq;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import org.apache.commons.lang.StringUtils;
 
 import play.Logger;
 import play.Play;
 import play.PlayPlugin;
-import play.modules.rabbitmq.stats.*;
+import play.modules.rabbitmq.stats.StatsService;
 import play.modules.rabbitmq.util.ExceptionUtil;
 import play.modules.rabbitmq.util.MsgMapper;
 
@@ -34,7 +36,6 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.MessageProperties;
-import com.rabbitmq.client.QueueingConsumer;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -59,6 +60,30 @@ public class RabbitMQPlugin extends PlayPlugin {
 	 */
 	@Override
 	public void onApplicationStart() {
+		// Parse rabbitMQ connection url if one exists
+		if (Play.configuration.containsKey("rabbitmq.url")) {
+			String rabbitmqUrl = Play.configuration.getProperty("rabbitmq.url");
+			URI rabbitmqUri;
+			try {
+				rabbitmqUri = new URI(rabbitmqUrl);
+			} catch (URISyntaxException e) {
+				throw new RuntimeException("Unable to parse rabbitmq.url (" + rabbitmqUrl + ")", e);
+			}
+			
+			Play.configuration.setProperty("rabbitmq.host", rabbitmqUri.getHost());
+			Play.configuration.setProperty("rabbitmq.port", Integer.toString(rabbitmqUri.getPort()));
+			
+			if (rabbitmqUri.getPath().length() > 1) {
+				Play.configuration.setProperty("rabbitmq.vhost", rabbitmqUri.getPath().substring(1));
+			}
+			
+			if (rabbitmqUri.getUserInfo() != null) {
+				String[] rabbitmqUserInfo = rabbitmqUri.getUserInfo().split(":");
+				Play.configuration.setProperty("rabbitmq.username", rabbitmqUserInfo[0]);
+				Play.configuration.setProperty("rabbitmq.password", rabbitmqUserInfo[1]);
+			}
+		}
+		
 		// Connection Factory
 		factory.setHost(getHost());
 		factory.setPort(getPort());
@@ -238,7 +263,13 @@ public class RabbitMQPlugin extends PlayPlugin {
 		if (s == null) {
 			return 5672;
 		}
-		return Integer.parseInt(s);
+		
+		int port = Integer.parseInt(s);
+		if (port < 0) {
+			return 5672;
+		}
+		
+		return port;
 	}
 
 	/**

@@ -50,7 +50,13 @@ rabbitmq.basicQos -> Please read RabbitMQ's documentation for more information o
 rabbitmq.retries -> Max number of retries per message. This number can be overwritten on a queue level by overriding the retries() method on your consumer class.
 rabbitmq.msgmapper -> Possible values are "pojo" or "json". These are the different implementations used to store and retrieve messages, "json" uses Jackson's ObjectMapper and "pojo" uses Java's serialization.
 
+You may also combine several of these properties into a connection url:
 
+rabbitmq.url=amqp://username:password@host[:port]/[vhost]
+
+E.g.:
+
+rabbitmq.url=amqp://guest:gues@localhost/
 
 h3. 4) Define Message that will be used by the Queue (just a simple POJO)
 
