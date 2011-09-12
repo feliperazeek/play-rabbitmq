@@ -72,7 +72,10 @@ public class RabbitMQPlugin extends PlayPlugin {
 			
 			Play.configuration.setProperty("rabbitmq.host", rabbitmqUri.getHost());
 			Play.configuration.setProperty("rabbitmq.port", Integer.toString(rabbitmqUri.getPort()));
-			Play.configuration.setProperty("rabbitmq.vhost", rabbitmqUri.getPath());
+			
+			if (rabbitmqUri.getPath().length() > 1) {
+				Play.configuration.setProperty("rabbitmq.vhost", rabbitmqUri.getPath().substring(1));
+			}
 			
 			if (rabbitmqUri.getUserInfo() != null) {
 				String[] rabbitmqUserInfo = rabbitmqUri.getUserInfo().split(":");
