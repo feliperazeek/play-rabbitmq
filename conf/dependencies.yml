@@ -2,8 +2,14 @@ self: play -> rabbitmq 0.2
 
 require:
     - play
-    - play -> resteasy 1.3.1
     - play -> console
-    - com.rabbitmq -> amqp-client 2.5.0
+    - se.scalablesolutions.akka -> akka-amqp 1.1.3
     - org.codehaus.jackson -> jackson-mapper-asl 1.5.1
+    
+repositories:
+    - akka:
+        type: iBiblio
+        root: "http://akka.io/repository/"
+        contains:
+            - se.scalablesolutions.akka -> *                                               
 
