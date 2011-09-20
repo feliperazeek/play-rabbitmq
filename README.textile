@@ -211,3 +211,5 @@ May 26th 2011 - Version 0.0.8: Adding more stats
 May 28th 2011 - Version 0.0.9: Adding ability for consumers to pause. 
 
 June 16th 2011 - Version 0.2: Upgrading to RabbitMQ 2.5.0 and fixed bugs
+
+September 20th 2011 - Version 0.3: Just removing broken unittest that wasn't supposed to be there in the first place.
