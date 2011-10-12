@@ -24,6 +24,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 
+import java.lang.reflect.Method;
+
 import org.codehaus.jackson.map.ObjectMapper;
 
 import play.Logger;
@@ -67,7 +69,10 @@ public interface MsgMapper {
 		pojo(POJO.class),
 
 		/** The json. */
-		json(JSON.class);
+		json(JSON.class),
+
+		/** The protoBuf. */
+		proto(PROTO.class);
 
 		/** The clazz. */
 		private Class clazz;
@@ -183,6 +188,58 @@ public interface MsgMapper {
 		public Object getObject(Class clazz, byte[] object) throws Exception {
 			Object data = mapper.readValue(new String(object), clazz);
 			return data;
+		}
+
+	}
+
+	/**
+	 * The Class PROTO.
+	 */
+	public static class PROTO implements MsgMapper {
+
+		/**
+		 * Gets the bytes.
+		 * 
+		 * @param object
+		 *            the object
+		 * @return the bytes
+		 * @throws Exception
+		 *             the exception
+		 */
+		@Override
+		public byte[] getBytes(Object object) throws Exception {
+			com.google.protobuf.Message proto = (com.google.protobuf.Message)object;
+			proto.toByteArray();
+			return proto.toByteArray();
+		}
+
+		/**
+		 * Gets the object.
+		 * 
+		 * @param object
+		 *            the object
+		 * @return the object
+		 * @throws Exception
+		 *             the exception
+		 */
+		@Override
+		public Object getObject(Class clazz, byte[] object) throws Exception {
+			Object retobj = null;
+	      try {
+	          Class partypes[] = new Class[1];
+	           partypes[0] = object.getClass();
+	           Method meth = clazz.getMethod(
+	             "parseFrom", partypes);
+	           Object methobj = clazz.newInstance();
+	           Object arglist[] = new Object[1];
+	           arglist[0] = object;
+	           retobj 
+	             = meth.invoke(methobj, arglist);
+	        }
+	        catch (Throwable e) {
+	           Logger.error(e.getMessage());
+	        }
+		return retobj;
 		}
 
 	}
