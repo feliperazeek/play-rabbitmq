@@ -92,9 +92,6 @@ public class RabbitMQMessageConsumerJob<T> extends Job<T> {
 				this.consumer.consume(this.message);
 				success = true;
 
-				// Now tell Daddy everything is cool
-				this.channel.basicAck(this.deliveryTag, false);
-
 				// Execution Time
 				executionTime = new java.util.Date().getTime() - start;
 				Logger.debug("Message %s from queue %s has been processed by consumer %s (execution time: %s ms)", this.message, this.queue, this.consumer, executionTime);
@@ -158,29 +155,13 @@ public class RabbitMQMessageConsumerJob<T> extends Job<T> {
 		// Log Debug
 		if (!success) {
 			Logger.error("Final error processing message (%s) with consumer (%s). Last Exception: %s", this.message, this.consumer, exception);
-		}
-		
-		// Now tell Daddy everything is cool
-		try {
-			this.channel.basicAck(this.deliveryTag, false);
-		} catch (Throwable e) {
-			Logger.error(ExceptionUtil.getStackTrace("Error doing a basicAck for tag: " + this.deliveryTag, e));
-		}
-		
-		// Cleanup Channel
-		if ( channel != null && channel.getConnection() != null && channel.getConnection().isOpen() ) {
-			try {
-				channel.getConnection().close();
-			} catch (Throwable t) {
-				Logger.error(ExceptionUtil.getStackTrace(t));
-			}
-		}
-		if ( channel != null && channel.isOpen() ) {
-			try {
-				channel.close();
-			} catch (Throwable t) {
-				Logger.error(ExceptionUtil.getStackTrace(t));
-			}
+
+            // Now tell Daddy everything is cool
+            try {
+                this.channel.basicAck(this.deliveryTag, false);
+            } catch (Throwable e) {
+                Logger.error(ExceptionUtil.getStackTrace("Error doing a basicAck for tag: " + this.deliveryTag, e));
+            }
 		}
 	}
 
