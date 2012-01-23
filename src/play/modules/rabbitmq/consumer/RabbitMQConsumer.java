@@ -18,14 +18,16 @@
  */
 package play.modules.rabbitmq.consumer;
 
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.QueueingConsumer;
 import play.Logger;
 import play.Play;
+import play.exceptions.UnexpectedException;
 import play.jobs.Job;
 import play.modules.rabbitmq.RabbitMQPlugin;
 import play.modules.rabbitmq.util.ExceptionUtil;
 
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.QueueingConsumer;
+import java.io.IOException;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -41,6 +43,7 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 	 * application.conf (please override if you need a new value)
 	 */
 	public static int retries = RabbitMQPlugin.retries();
+    DeliveryTag unacknowledgedDeliveryTag;
 
 	/**
 	 * Consume.
@@ -56,30 +59,28 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 	 * @param plugin
 	 *            the plugin
 	 * @return the channel
-	 * @throws Exception
+	 * @throws IOException
 	 *             the exception
 	 */
-	protected Channel createChannel(RabbitMQPlugin plugin) throws Exception {
+	protected Channel createChannel(RabbitMQPlugin plugin) throws IOException {
 		// Get Plugin
 		Channel channel = plugin.createChannel(this.queue(), this.routingKey());
 		return channel;
 	}
 
 	/**
-	 * Creates the channel.
+	 * Creates the consumer.
 	 * 
 	 * @param channel
 	 *            the channel
-	 * @param plugin
-	 *            the plugin
 	 * @return the channel
-	 * @throws Exception
-	 *             the exception
+	 * @throws IOException
+	 *             if calling basicConsume throws
 	 */
-	protected QueueingConsumer createConsumer(Channel channel, RabbitMQPlugin plugin) throws Exception {
+	protected QueueingConsumer createConsumer(Channel channel) throws IOException {
 		// Get Plugin
 		QueueingConsumer consumer = new QueueingConsumer(channel);
-		channel.basicConsume(this.queue(), plugin.isAutoAck(), consumer);
+		channel.basicConsume(this.queue(), RabbitMQPlugin.isAutoAck(), consumer);
 
 		// Log Debug
 		Logger.trace("RabbitMQ Consumer - Channel: %s, Consumer: %s ", channel, consumer);

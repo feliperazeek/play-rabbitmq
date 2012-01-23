@@ -19,7 +19,7 @@ public class RabbitMQMessageConsumerJob<T> extends Job<T> {
 	private T message;
 
 	/** The consumer. */
-	private RabbitMQConsumer consumer;
+	private RabbitMQConsumer<T> consumer;
 
 	/** The retries. */
 	private int retries;
@@ -36,12 +36,20 @@ public class RabbitMQMessageConsumerJob<T> extends Job<T> {
 	/**
 	 * Instantiates a new rabbit mq message consumer job.
 	 * 
+	 * @param channel
+	 *            the channel
+	 * @param deliveryTag
+	 *            the delivery tag
+	 * @param queue
+	 *            the queue
 	 * @param consumer
 	 *            the consumer
 	 * @param message
 	 *            the message
+	 * @param retries
+	 *            number of retries
 	 */
-	public RabbitMQMessageConsumerJob(Channel channel, long deliveryTag, String queue, RabbitMQConsumer consumer, T message, int retries) {
+	public RabbitMQMessageConsumerJob(Channel channel, long deliveryTag, String queue, RabbitMQConsumer<T> consumer, T message, int retries) {
 		this.consumer = consumer;
 		this.message = message;
 		this.retries = retries;

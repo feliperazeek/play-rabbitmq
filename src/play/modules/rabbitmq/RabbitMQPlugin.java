@@ -18,12 +18,12 @@
  */
 package play.modules.rabbitmq;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-
+import com.rabbitmq.client.AMQP.BasicProperties;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.MessageProperties;
 import org.apache.commons.lang.StringUtils;
-
 import play.Logger;
 import play.Play;
 import play.PlayPlugin;
@@ -31,11 +31,9 @@ import play.modules.rabbitmq.stats.StatsService;
 import play.modules.rabbitmq.util.ExceptionUtil;
 import play.modules.rabbitmq.util.MsgMapper;
 
-import com.rabbitmq.client.AMQP.BasicProperties;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.MessageProperties;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -180,10 +178,10 @@ public class RabbitMQPlugin extends PlayPlugin {
 	 * @param queue
 	 *            the queue
 	 * @return the channel
-	 * @throws Exception
+	 * @throws IOException
 	 *             the exception
 	 */
-	public Channel createChannel(String queue, String routingKey) throws Exception {
+	public Channel createChannel(String queue, String routingKey) throws IOException {
 		// Counter that keeps track of number of retries
 		int attempts = 0;
 
@@ -217,8 +215,8 @@ public class RabbitMQPlugin extends PlayPlugin {
 				// String queueName = channel.queueDeclare().getQueue();
 				// channel.queueBind(queueName, exchangeName, routingKey);
 				
-				channel.exchangeDeclare(queue, plugin.getExchangeType(), true);
-				channel.queueDeclare(queue, plugin.isDurable(), false, false, null);
+				channel.exchangeDeclare(queue, RabbitMQPlugin.getExchangeType(), true);
+				channel.queueDeclare(queue, RabbitMQPlugin.isDurable(), false, false, null);
 				channel.queueBind(queue, queue, routingKey);
 
 				// Log Debug
