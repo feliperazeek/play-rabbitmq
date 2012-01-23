@@ -157,7 +157,7 @@ public class RabbitMQPlugin extends PlayPlugin {
 		int attempts = 0;
 		while (true) {
 			attempts++;
-			Logger.info("Attempting to connect to queue: attempt " + attempts);
+			Logger.trace("Attempting to connect to queue: attempt " + attempts);
 			try {
 				Connection connection = this.getConnection();
 				channel = connection.createChannel();
@@ -191,7 +191,7 @@ public class RabbitMQPlugin extends PlayPlugin {
 		RabbitMQPlugin plugin = Play.plugin(RabbitMQPlugin.class);
 
 		// Log Debug
-		Logger.info("Initializing connections to RabbitMQ instance (%s:%s), Queue: %s", RabbitMQPlugin.getHost(), RabbitMQPlugin.getPort(), queue);
+		Logger.trace("Initializing connections to RabbitMQ instance (%s:%s), Queue: %s", RabbitMQPlugin.getHost(), RabbitMQPlugin.getPort(), queue);
 
 		// Create Channel
 		Channel channel = this.createChannel();
@@ -208,7 +208,7 @@ public class RabbitMQPlugin extends PlayPlugin {
 			attempts++;
 
 			// Log Debug
-			Logger.debug("Retry " + attempts);
+			Logger.trace("Retry " + attempts);
 
 			// Get Next Delivery Message
 			try {
@@ -222,7 +222,7 @@ public class RabbitMQPlugin extends PlayPlugin {
 				channel.queueBind(queue, queue, routingKey);
 
 				// Log Debug
-				Logger.info("RabbitMQ Task Channel Available: " + channel);
+				Logger.trace("RabbitMQ Task Channel Available: " + channel);
 
 				// Return Channel
 				return channel;

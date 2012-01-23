@@ -59,7 +59,7 @@ public class Stats<KEY> {
 	 */
 	protected void log(String msg) {
 		if (this.debug) {
-			Logger.info(msg);
+			Logger.trace(msg);
 		}
 	}
 

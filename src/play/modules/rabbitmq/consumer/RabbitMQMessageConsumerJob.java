@@ -89,7 +89,7 @@ public class RabbitMQMessageConsumerJob<T> extends Job<T> {
 
 				// Execution Time
 				executionTime = new java.util.Date().getTime() - start;
-				Logger.info("Message %s from queue %s has been processed by consumer %s (execution time: %s ms)", this.message, this.queue, this.consumer, executionTime);
+				Logger.debug("Message %s from queue %s has been processed by consumer %s (execution time: %s ms)", this.message, this.queue, this.consumer, executionTime);
 
 				// Update Stats
 				play.modules.rabbitmq.RabbitMQPlugin.statsService().record(this.queue, play.modules.rabbitmq.stats.StatsEvent.Type.CONSUMER, play.modules.rabbitmq.stats.StatsEvent.Status.SUCCESS, executionTime);

@@ -82,7 +82,7 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 		channel.basicConsume(this.queue(), plugin.isAutoAck(), consumer);
 
 		// Log Debug
-		Logger.info("RabbitMQ Consumer - Channel: %s, Consumer: %s " + channel, consumer);
+		Logger.trace("RabbitMQ Consumer - Channel: %s, Consumer: %s ", channel, consumer);
 
 		// Return Channel
 		return consumer;
@@ -120,7 +120,7 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 		// Get Channel
 		while (true) {
 			// Log Debug
-			Logger.info("Entering main loop on consumer: " + this);
+			Logger.trace("Entering main loop on consumer: " + this);
 
 			// Are Consumers Running?
 			boolean active = RabbitMQPlugin.areConsumersActive();
@@ -129,7 +129,7 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 			if (active) {
 				try {
 					// Create Channel
-					if (channel == null || (channel != null && channel.isOpen() == false)) {
+					if (channel == null || !channel.isOpen()) {
 						consumer = null;
 						channel = this.createChannel(plugin);
 					}
