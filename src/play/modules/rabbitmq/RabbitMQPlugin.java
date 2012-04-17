@@ -240,6 +240,134 @@ public class RabbitMQPlugin extends PlayPlugin {
 		}
 	}
 
+/**
+	 * Creates the channel for a subscriber to consume messages from an exchange
+	 * (Exchange is created.  Subscribers queue and binding by routing key are created)
+	 * 
+	 * @param exchangeName
+	 *            the exchange name
+	 * @param queue
+	 *            the queue
+	 * @param routingKey
+	 *            the routing key
+	 * @return the channel
+	 * @throws Exception
+	 *             the exception
+	 */
+	public Channel createSubscribersChannel(String exchangeName, String queue, String routingKey) throws Exception {
+		// Counter that keeps track of number of retries
+		int attempts = 0;
+
+		// Get Plugin
+		RabbitMQPlugin plugin = Play.plugin(RabbitMQPlugin.class);
+
+		// Log Debug
+		Logger.info("Initializing connections to RabbitMQ instance (%s:%s), Exchange: %s, Queue: %s", RabbitMQPlugin.getHost(), RabbitMQPlugin.getPort(),exchangeName, queue);
+
+		// Create Channel
+		Channel channel = this.createChannel();
+
+		// Basic Qos
+		if (RabbitMQPlugin.isBasicQos()) {
+			int prefetchCount = 1;
+			channel.basicQos(prefetchCount);
+		}
+
+		// Start Daemon
+		while (true) {
+			// Add to the number of retries
+			attempts++;
+
+			// Log Debug
+			Logger.debug("Retry " + attempts);
+
+			// Get Next Delivery Message
+			try {
+				// http://www.rabbitmq.com/api-guide.html
+				channel.exchangeDeclare(exchangeName, plugin.getExchangeType(), true);
+				channel.queueDeclare(queue, plugin.isDurable(), false, false, null);
+				channel.queueBind(queue, exchangeName, routingKey);
+
+				// Log Debug
+				Logger.info("RabbitMQ Task Channel Available: " + channel);
+
+				// Return Channel
+				return channel;
+
+			} catch (Throwable t) {
+				// Log Debug
+				Logger.error("Error establishing a connection to RabbitMQ, will keep retrying - Exception: %s", ExceptionUtil.getStackTrace(t));
+
+				// Sleep a little while before retrying
+				try {
+					Thread.sleep(1000 * 10);
+				} catch (InterruptedException ex) {
+				}
+			}
+		}
+	}
+
+	/**
+	 * Creates the channel to publish messages to an exchange
+	 * (Exchange is created.  Queue and bindings are NOT created)
+	 * 
+	 * @param exchangeName
+	 *            the exchange name
+	 * @return the channel
+	 * @throws Exception
+	 *             the exception
+	 */
+	public Channel createPublishersChannel(String exchangeName) throws Exception {
+		// Counter that keeps track of number of retries
+		int attempts = 0;
+
+		// Get Plugin
+		RabbitMQPlugin plugin = Play.plugin(RabbitMQPlugin.class);
+
+		// Log Debug
+		Logger.info("Initializing connections to RabbitMQ instance (%s:%s), Exchange: %s", RabbitMQPlugin.getHost(), RabbitMQPlugin.getPort(), exchangeName);
+
+		// Create Channel
+		Channel channel = this.createChannel();
+
+		// Basic Qos
+		if (RabbitMQPlugin.isBasicQos()) {
+			int prefetchCount = 1;
+			channel.basicQos(prefetchCount);
+		}
+
+		// Start Daemon
+		while (true) {
+			// Add to the number of retries
+			attempts++;
+
+			// Log Debug
+			Logger.debug("Retry " + attempts);
+
+			// Get Next Delivery Message
+			try {
+				// http://www.rabbitmq.com/api-guide.html
+				channel.exchangeDeclare(exchangeName, plugin.getExchangeType(), true);
+
+				// Log Debug
+				Logger.info("RabbitMQ Task Channel Available: " + channel);
+
+				// Return Channel
+				return channel;
+
+			} catch (Throwable t) {
+				// Log Debug
+				Logger.error("Error establishing a connection to RabbitMQ, will keep retrying - Exception: %s", ExceptionUtil.getStackTrace(t));
+
+				// Sleep a little while before retrying
+				try {
+					Thread.sleep(1000 * 10);
+				} catch (InterruptedException ex) {
+				}
+			}
+		}
+	}
+	
 	/**
 	 * Gets the host.
 	 * 
