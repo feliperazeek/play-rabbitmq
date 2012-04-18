@@ -133,7 +133,7 @@ public abstract class RabbitMQPublisher {
 
 				// Execution Time
 				executionTime = new java.util.Date().getTime() - start;
-				Logger.info("Message %s has been published to queue %s (execution time: %s ms)", this.message, this.queueName, executionTime);
+				Logger.debug("Message %s has been published to queue %s (execution time: %s ms)", this.message, this.queueName, executionTime);
 
 				// Update Stats
 				play.modules.rabbitmq.RabbitMQPlugin.statsService().record(this.queueName, play.modules.rabbitmq.stats.StatsEvent.Type.PRODUCER, play.modules.rabbitmq.stats.StatsEvent.Status.SUCCESS, executionTime);

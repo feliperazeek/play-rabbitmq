@@ -18,14 +18,16 @@
  */
 package play.modules.rabbitmq.consumer;
 
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.QueueingConsumer;
 import play.Logger;
 import play.Play;
+import play.exceptions.UnexpectedException;
 import play.jobs.Job;
 import play.modules.rabbitmq.RabbitMQPlugin;
 import play.modules.rabbitmq.util.ExceptionUtil;
 
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.QueueingConsumer;
+import java.io.IOException;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -41,6 +43,7 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 	 * application.conf (please override if you need a new value)
 	 */
 	public static int retries = RabbitMQPlugin.retries();
+    DeliveryTag unacknowledgedDeliveryTag;
 
 	/**
 	 * Consume.
@@ -56,33 +59,31 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 	 * @param plugin
 	 *            the plugin
 	 * @return the channel
-	 * @throws Exception
+	 * @throws IOException
 	 *             the exception
 	 */
-	protected Channel createChannel(RabbitMQPlugin plugin) throws Exception {
+	protected Channel createChannel(RabbitMQPlugin plugin) throws IOException {
 		// Get Plugin
 		Channel channel = plugin.createChannel(this.queue(), this.routingKey());
 		return channel;
 	}
 
 	/**
-	 * Creates the channel.
+	 * Creates the consumer.
 	 * 
 	 * @param channel
 	 *            the channel
-	 * @param plugin
-	 *            the plugin
 	 * @return the channel
-	 * @throws Exception
-	 *             the exception
+	 * @throws IOException
+	 *             if calling basicConsume throws
 	 */
-	protected QueueingConsumer createConsumer(Channel channel, RabbitMQPlugin plugin) throws Exception {
+	protected QueueingConsumer createConsumer(Channel channel) throws IOException {
 		// Get Plugin
 		QueueingConsumer consumer = new QueueingConsumer(channel);
-		channel.basicConsume(this.queue(), plugin.isAutoAck(), consumer);
+		channel.basicConsume(this.queue(), RabbitMQPlugin.isAutoAck(), consumer);
 
 		// Log Debug
-		Logger.info("RabbitMQ Consumer - Channel: %s, Consumer: %s " + channel, consumer);
+		Logger.trace("RabbitMQ Consumer - Channel: %s, Consumer: %s ", channel, consumer);
 
 		// Return Channel
 		return consumer;
@@ -95,8 +96,12 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 	 */
 	@Override
 	public void doJob() {
-		this.goGetHerSon();
-	}
+        try {
+            this.goGetHerSon();
+        } catch (IOException e) {
+            throw new UnexpectedException(e);
+        }
+    }
 
 	/**
 	 * Gets the message type.
@@ -108,19 +113,19 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 	/**
 	 * Go get her son.
 	 */
-	private void goGetHerSon() {
+	private void goGetHerSon() throws IOException {
 		// Get Plugin
 		RabbitMQPlugin plugin = Play.plugin(RabbitMQPlugin.class);
 
 		// Define Channel
-		Channel channel = null;
-		QueueingConsumer consumer = null;
+		Channel channel = this.createChannel(plugin);
+		QueueingConsumer consumer = this.createConsumer(channel);
 		Long deliveryTag = null;
 
 		// Get Channel
 		while (true) {
 			// Log Debug
-			Logger.info("Entering main loop on consumer: " + this);
+			Logger.trace("Entering main loop on consumer: " + this);
 
 			// Are Consumers Running?
 			boolean active = RabbitMQPlugin.areConsumersActive();
@@ -128,17 +133,6 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 			// Only do work if consumers are running
 			if (active) {
 				try {
-					// Create Channel
-					if (channel == null || (channel != null && channel.isOpen() == false)) {
-						consumer = null;
-						channel = this.createChannel(plugin);
-					}
-
-					// Create Consumer
-					if (consumer == null) {
-						consumer = this.createConsumer(channel, plugin);
-					}
-
 					// Get Task
 					QueueingConsumer.Delivery task = consumer.nextDelivery();
 
@@ -149,6 +143,7 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 							// consumer,
 							// ack the queue and do the retry logic
 							deliveryTag = task.getEnvelope().getDeliveryTag();
+                            unacknowledgedDeliveryTag = new DeliveryTag(deliveryTag, channel); 
 							T message = this.toObject(task.getBody());
 							new RabbitMQMessageConsumerJob(channel, deliveryTag, this.queue(), this, message, this.retries()).doJobWithResult();
 
@@ -167,29 +162,6 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 						Logger.error(ExceptionUtil.getStackTrace(t));
 					}
 
-				} finally {
-					if (channel != null) {
-						// Now tell Daddy everything is cool
-						try {
-							if (deliveryTag != null && channel.isOpen()) {
-								channel.basicAck(deliveryTag, false);
-							}
-						} catch (Throwable e) {
-							Logger.error(ExceptionUtil.getStackTrace("Error doing a basicAck for tag: " + deliveryTag, e));
-						}
-						try {
-							if (channel.getConnection() != null && channel.getConnection().isOpen()) {
-								channel.getConnection().close();
-							}
-							if (channel.isOpen() == true) {
-								channel.close();
-							}
-						} catch (Throwable t) {
-							Logger.error(ExceptionUtil.getStackTrace(t));
-						} finally {
-							channel = null;
-						}
-					}
 				}
 			} else {
 				Logger.warn("RabbitMQ consumers are paused and napping for 10 secs...");
@@ -201,6 +173,14 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 		}
 	}
 
+    protected void ack() {
+        try {
+            unacknowledgedDeliveryTag.channel.basicAck(unacknowledgedDeliveryTag.deliveryTag, true);
+        } catch (IOException e) {
+            throw new UnexpectedException(e);
+        }
+    }
+    
 	/**
 	 * Gets the queue name.
 	 * 
@@ -211,8 +191,6 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 	/**
 	 * Routing key.
 	 * 
-	 * @param t
-	 *            the t
 	 * @return the string
 	 */
 	protected String routingKey() {
@@ -241,4 +219,13 @@ public abstract class RabbitMQConsumer<T> extends Job<T> {
 		return (T) RabbitMQPlugin.mapper().getObject(this.getMessageType(), bytes);
 	}
 
+    public static class DeliveryTag {
+        public long deliveryTag;
+        public Channel channel;
+
+        public DeliveryTag(long deliveryTag, Channel channel) {
+            this.deliveryTag = deliveryTag;
+            this.channel = channel;
+        }
+    }
 }

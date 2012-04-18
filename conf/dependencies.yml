@@ -6,4 +6,6 @@ require:
     - play -> console
     - com.rabbitmq -> amqp-client 2.5.0
     - org.codehaus.jackson -> jackson-mapper-asl 1.5.1
+    - com.google.protobuf -> protobuf-java 2.4.1
+
 
