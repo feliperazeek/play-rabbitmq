@@ -1,4 +1,4 @@
-self: yell -> rabbitmq 0.4.1
+self: play -> rabbitmq 0.4
 
 require:
     - play
