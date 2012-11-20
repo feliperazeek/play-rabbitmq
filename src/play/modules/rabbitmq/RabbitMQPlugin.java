@@ -32,6 +32,7 @@ import play.modules.rabbitmq.util.ExceptionUtil;
 import play.modules.rabbitmq.util.MsgMapper;
 
 import com.rabbitmq.client.AMQP.BasicProperties;
+import com.rabbitmq.client.Address;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
@@ -400,6 +401,38 @@ public class RabbitMQPlugin extends PlayPlugin {
 		return port;
 	}
 
+        /**
+	 * Gets the host2. For connection to the mirror queues.
+	 * 
+	 * @return the host
+	 */
+	public static String getHost2() {
+		String s = Play.configuration.getProperty("rabbitmq.host2");
+		if (s == null) {
+			return "localhost";
+		}
+		return s;
+	}
+
+	/**
+	 * Gets the port. For connection to the mirror queues.
+	 * 
+	 * @return the port
+	 */
+	public static int getPort2() {
+		String s = Play.configuration.getProperty("rabbitmq.port2");
+		if (s == null) {
+			return 5672;
+		}
+		
+		int port = Integer.parseInt(s);
+		if (port < 0) {
+			return 5672;
+		}
+		
+		return port;
+	}
+        
 	/**
 	 * Gets the user name.
 	 * 
@@ -522,6 +555,18 @@ public class RabbitMQPlugin extends PlayPlugin {
 		return s;
 	}
 
+        /**
+         * Gets address array for multiply connection
+         * 
+         * @return 
+         */
+        public Address[] getAddress() {
+            return new Address[]{
+                new Address(getHost(), getPort()),
+                new Address(getHost2(), getPort2())
+            };
+        }
+        
 	/**
 	 * Gets the connection.
 	 * 
@@ -529,7 +574,7 @@ public class RabbitMQPlugin extends PlayPlugin {
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
-	public Connection getConnection() throws IOException {
-		return factory.newConnection();
-	}
+        public Connection getConnection() throws IOException {
+            return factory.newConnection(getAddress());
+        }
 }
