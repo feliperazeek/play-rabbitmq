@@ -37,6 +37,8 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.MessageProperties;
+import java.util.ArrayList;
+import java.util.List;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -189,9 +191,6 @@ public class RabbitMQPlugin extends PlayPlugin {
 		// Get Plugin
 		RabbitMQPlugin plugin = Play.plugin(RabbitMQPlugin.class);
 
-		// Log Debug
-		Logger.info("Initializing connections to RabbitMQ instance (%s:%s), Queue: %s", RabbitMQPlugin.getHost(), RabbitMQPlugin.getPort(), queue);
-
 		// Create Channel
 		Channel channel = this.createChannel();
 
@@ -260,9 +259,6 @@ public class RabbitMQPlugin extends PlayPlugin {
 		// Get Plugin
 		RabbitMQPlugin plugin = Play.plugin(RabbitMQPlugin.class);
 
-		// Log Debug
-		Logger.info("Initializing connections to RabbitMQ instance (%s:%s), Exchange: %s, Queue: %s", RabbitMQPlugin.getHost(), RabbitMQPlugin.getPort(),exchangeName, queue);
-
 		// Create Channel
 		Channel channel = this.createChannel();
 
@@ -322,9 +318,6 @@ public class RabbitMQPlugin extends PlayPlugin {
 
 		// Get Plugin
 		RabbitMQPlugin plugin = Play.plugin(RabbitMQPlugin.class);
-
-		// Log Debug
-		Logger.info("Initializing connections to RabbitMQ instance (%s:%s), Exchange: %s", RabbitMQPlugin.getHost(), RabbitMQPlugin.getPort(), exchangeName);
 
 		// Create Channel
 		Channel channel = this.createChannel();
