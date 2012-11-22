@@ -26,8 +26,7 @@ It should be running on port 5762 by default. The default user "guest" and passw
 
 h3. 3) Configuration
 
-rabbitmq.host=localhost
-rabbitmq.port=5672
+rabbitmq.seeds=localhost:5672,host2:port2,host3:port:3
 rabbitmq.vhost=/
 rabbitmq.username=guest
 rabbitmq.password=guest
@@ -38,8 +37,7 @@ rabbitmq.basicQos=true
 rabbitmq.retries=5
 rabbitmq.msgmapper=json
 
-rabbitmq.host -> I am sure you can guess this one
-rabbitmq.port -> I am sure you can guess this one
+rabbitmq.seeds ->  An array of known broker addresses (hostname/port pairs) to try in order. 
 rabbitmq.vhost -> If you don't know what this is I recommend reading the Admin Guide for RabbitMQ (http://www.rabbitmq.com/admin-guide.html)
 rabbitmq.user -> I am sure you can guess this one. guest is the default user on a fresh RabbitMQ install.
 rabbitmq.password -> I am sure you can guess this one. guest is the default value on a fresh RabbitMQ install.
