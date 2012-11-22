@@ -37,6 +37,8 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.MessageProperties;
+import java.util.ArrayList;
+import java.util.List;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -86,8 +88,6 @@ public class RabbitMQPlugin extends PlayPlugin {
 		}
 		
 		// Connection Factory
-		factory.setHost(getHost());
-		factory.setPort(getPort());
 		factory.setUsername(getUserName());
 		factory.setPassword(getPassword());
 		factory.setVirtualHost(getVhost());
@@ -191,9 +191,6 @@ public class RabbitMQPlugin extends PlayPlugin {
 		// Get Plugin
 		RabbitMQPlugin plugin = Play.plugin(RabbitMQPlugin.class);
 
-		// Log Debug
-		Logger.info("Initializing connections to RabbitMQ instance (%s:%s), Queue: %s", RabbitMQPlugin.getHost(), RabbitMQPlugin.getPort(), queue);
-
 		// Create Channel
 		Channel channel = this.createChannel();
 
@@ -262,9 +259,6 @@ public class RabbitMQPlugin extends PlayPlugin {
 		// Get Plugin
 		RabbitMQPlugin plugin = Play.plugin(RabbitMQPlugin.class);
 
-		// Log Debug
-		Logger.info("Initializing connections to RabbitMQ instance (%s:%s), Exchange: %s, Queue: %s", RabbitMQPlugin.getHost(), RabbitMQPlugin.getPort(),exchangeName, queue);
-
 		// Create Channel
 		Channel channel = this.createChannel();
 
@@ -325,9 +319,6 @@ public class RabbitMQPlugin extends PlayPlugin {
 		// Get Plugin
 		RabbitMQPlugin plugin = Play.plugin(RabbitMQPlugin.class);
 
-		// Log Debug
-		Logger.info("Initializing connections to RabbitMQ instance (%s:%s), Exchange: %s", RabbitMQPlugin.getHost(), RabbitMQPlugin.getPort(), exchangeName);
-
 		// Create Channel
 		Channel channel = this.createChannel();
 
@@ -368,71 +359,7 @@ public class RabbitMQPlugin extends PlayPlugin {
 			}
 		}
 	}
-	
-	/**
-	 * Gets the host.
-	 * 
-	 * @return the host
-	 */
-	public static String getHost() {
-		String s = Play.configuration.getProperty("rabbitmq.host");
-		if (s == null) {
-			return "localhost";
-		}
-		return s;
-	}
-
-	/**
-	 * Gets the port.
-	 * 
-	 * @return the port
-	 */
-	public static int getPort() {
-		String s = Play.configuration.getProperty("rabbitmq.port");
-		if (s == null) {
-			return 5672;
-		}
-		
-		int port = Integer.parseInt(s);
-		if (port < 0) {
-			return 5672;
-		}
-		
-		return port;
-	}
-
-        /**
-	 * Gets the host2. For connection to the mirror queues.
-	 * 
-	 * @return the host
-	 */
-	public static String getHost2() {
-		String s = Play.configuration.getProperty("rabbitmq.host2");
-		if (s == null) {
-			return "localhost";
-		}
-		return s;
-	}
-
-	/**
-	 * Gets the port. For connection to the mirror queues.
-	 * 
-	 * @return the port
-	 */
-	public static int getPort2() {
-		String s = Play.configuration.getProperty("rabbitmq.port2");
-		if (s == null) {
-			return 5672;
-		}
-		
-		int port = Integer.parseInt(s);
-		if (port < 0) {
-			return 5672;
-		}
-		
-		return port;
-	}
-        
+		       
 	/**
 	 * Gets the user name.
 	 * 
@@ -556,15 +483,30 @@ public class RabbitMQPlugin extends PlayPlugin {
 	}
 
         /**
-         * Gets address array for multiply connection
+         * Gets address using conf rabbitmq.seeds=host1[:port1];host2[:port2]...
          * 
          * @return 
          */
-        public Address[] getAddress() {
-            return new Address[]{
-                new Address(getHost(), getPort()),
-                new Address(getHost2(), getPort2())
-            };
+        public Address[] getAddress(String seeds) {
+            List<Address> addresses = new ArrayList<>();
+            if (seeds == null || seeds.isEmpty()) {
+                addresses.add(new Address("localhost", 5672));
+                return addresses.toArray(new Address[0]);
+            }
+            String[] stringArray = seeds.split("[;,\\s]");
+            for (String s : stringArray) {
+                String[] hostPort = s.split(":");
+                if (0 == hostPort.length) {
+                    continue;
+                }
+                String host = hostPort[0];
+                int port = 5672;
+                if (hostPort.length > 1) {
+                    port = Integer.parseInt(hostPort[1]);
+                }
+                addresses.add(new Address(host, port));
+            }
+            return addresses.toArray(new Address[0]);
         }
         
 	/**
@@ -575,6 +517,7 @@ public class RabbitMQPlugin extends PlayPlugin {
 	 *             Signals that an I/O exception has occurred.
 	 */
         public Connection getConnection() throws IOException {
-            return factory.newConnection(getAddress());
+            String seeds = Play.configuration.getProperty("rabbitmq.seeds");
+            return factory.newConnection(getAddress(seeds));
         }
 }
