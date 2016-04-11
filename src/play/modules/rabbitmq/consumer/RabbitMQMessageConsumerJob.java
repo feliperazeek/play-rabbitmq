@@ -9,7 +9,7 @@ import com.rabbitmq.client.Channel;
 
 /**
  * The Class RabbitMQMessageConsumerJob.
- * 
+ *
  * @param <T>
  *            the generic type
  */
@@ -35,7 +35,7 @@ public class RabbitMQMessageConsumerJob<T> extends Job<T> {
 
 	/**
 	 * Instantiates a new rabbit mq message consumer job.
-	 * 
+	 *
 	 * @param consumer
 	 *            the consumer
 	 * @param message
@@ -52,7 +52,7 @@ public class RabbitMQMessageConsumerJob<T> extends Job<T> {
 
 	/**
 	 * Consumer Message
-	 * 
+	 *
 	 * @see play.jobs.Job#doJob()
 	 */
 	@Override
@@ -84,9 +84,6 @@ public class RabbitMQMessageConsumerJob<T> extends Job<T> {
 				this.consumer.consume(this.message);
 				success = true;
 
-				// Now tell Daddy everything is cool
-				this.channel.basicAck(this.deliveryTag, false);
-
 				// Execution Time
 				executionTime = new java.util.Date().getTime() - start;
 				Logger.info("Message %s from queue %s has been processed by consumer %s (execution time: %s ms)", this.message, this.queue, this.consumer, executionTime);
@@ -98,18 +95,11 @@ public class RabbitMQMessageConsumerJob<T> extends Job<T> {
 				} else {
 					play.modules.rabbitmq.RabbitMQPlugin.statsService().record(this.queue, play.modules.rabbitmq.stats.StatsEvent.Type.CONSUMER, play.modules.rabbitmq.stats.StatsEvent.Status.SUCCESS_AFTER_RETRY, executionTime);
 				}
-				
+
 			} catch (RabbitMQNotRetriableException e) {
 				// Update Count
 				retryCount = Integer.MAX_VALUE;
-				
-				// Now tell Daddy everything is cool
-				try {
-					this.channel.basicAck(this.deliveryTag, false);
-				} catch (Throwable t) {
-					Logger.error(ExceptionUtil.getStackTrace("Error doing a basicAck for tag: " + this.deliveryTag, t));
-				}
-				
+
 				// Log Exception
 				exception = e;
 				Logger.error("Error processing message (%s) with consumer (%s). Exception (not a retriable exception): %s", this.message, this.consumer, ExceptionUtil.getStackTrace(exception));
@@ -121,10 +111,10 @@ public class RabbitMQMessageConsumerJob<T> extends Job<T> {
 				} else {
 					play.modules.rabbitmq.RabbitMQPlugin.statsService().record(this.queue, play.modules.rabbitmq.stats.StatsEvent.Type.CONSUMER, play.modules.rabbitmq.stats.StatsEvent.Status.ERROR_AFTER_RETRY, executionTime);
 				}
-				
+
 				// We are not retrying with this specific error
 				break;
-			
+
 			} catch (Throwable t) {
 				// Log Exception
 				exception = t;
@@ -151,14 +141,14 @@ public class RabbitMQMessageConsumerJob<T> extends Job<T> {
 		if (!success) {
 			Logger.error("Final error processing message (%s) with consumer (%s). Last Exception: %s", this.message, this.consumer, exception);
 		}
-		
+
 		// Now tell Daddy everything is cool
 		try {
 			this.channel.basicAck(this.deliveryTag, false);
 		} catch (Throwable e) {
 			Logger.error(ExceptionUtil.getStackTrace("Error doing a basicAck for tag: " + this.deliveryTag, e));
 		}
-		
+
 		// Cleanup Channel
 		if ( channel != null && channel.getConnection() != null && channel.getConnection().isOpen() ) {
 			try {
